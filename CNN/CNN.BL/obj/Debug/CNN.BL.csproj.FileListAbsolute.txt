@@ -1,0 +1,6 @@
+C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.BL\bin\Debug\CNN.BL.dll
+C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.BL\bin\Debug\CNN.BL.pdb
+C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.BL\obj\Debug\CNN.BL.csprojResolveAssemblyReference.cache
+C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.BL\obj\Debug\CNN.BL.csproj.CoreCompileInputs.cache
+C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.BL\obj\Debug\CNN.BL.dll
+C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.BL\obj\Debug\CNN.BL.pdb

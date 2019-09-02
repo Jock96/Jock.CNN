@@ -1,0 +1,11 @@
+C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.UI\bin\Debug\CNN.UI.exe.config
+C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.UI\bin\Debug\CNN.UI.exe
+C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.UI\bin\Debug\CNN.UI.pdb
+C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.UI\bin\Debug\CNN.BL.dll
+C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.UI\bin\Debug\CNN.Core.dll
+C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.UI\bin\Debug\CNN.BL.pdb
+C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.UI\bin\Debug\CNN.Core.pdb
+C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.UI\obj\Debug\CNN.UI.csprojResolveAssemblyReference.cache
+C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.UI\obj\Debug\CNN.UI.csproj.CoreCompileInputs.cache
+C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.UI\obj\Debug\CNN.UI.exe
+C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.UI\obj\Debug\CNN.UI.pdb
