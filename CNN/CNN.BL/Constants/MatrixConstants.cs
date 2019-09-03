@@ -3,11 +3,16 @@
     /// <summary>
     /// Класс констант матрицы изображения.
     /// </summary>
-    internal static class MatrixConstants
+    public static class MatrixConstants
     {
         /// <summary>
         /// Стандартный размер матрицы.
         /// </summary>
         public const int MATRIX_SIZE = 5;
+
+        /// <summary>
+        /// Стандартный размер матрицы фильтра.
+        /// </summary>
+        public const int FILTER_MATRIX_SIZE = 3;
     }
 }

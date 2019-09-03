@@ -1,9 +1,12 @@
 ﻿namespace CNN.UI
 {
     using System;
+    using System.IO;
 
     using CNN.BL.Constants;
     using CNN.BL.Utils;
+
+    using CNN.Core;
 
     /// <summary>
     /// Класс входной точки приложения.
@@ -18,14 +21,24 @@
             Console.ForegroundColor = ConsoleColor.Green;
 
             Console.WriteLine(ConsoleMessageConstants.HELLO_MESSAGE);
+            Console.WriteLine(ConsoleMessageConstants.PRESS_ANY_KEY_MESSAGE);
+
             Console.ReadKey();
 
-            var path = @"C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.BL\Resources\1.bmp";
+            Console.WriteLine(ConsoleMessageConstants.FILE_NAME_MESSAGE);
+
+            var fileName = Console.ReadLine();
+            var pathToResources = BL.Helpers.PathHelper.GetResourcesPath();
+
+            var path = Path.Combine(pathToResources, fileName + FileConstants.IMAGE_EXTENSION);
 
             var converter = new ImageConverterUtil(path);
             var matrix = converter.ConvertImageToMatrix();
 
-            foreach (var value in matrix)
+            var filterCore = FilterCore.Initialize();
+
+            // TODO: Отладка, убрать.
+            foreach (var value in filterCore)
                 Console.WriteLine(value.ToString());
 
             Console.ReadKey();

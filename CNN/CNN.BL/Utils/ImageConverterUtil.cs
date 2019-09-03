@@ -1,6 +1,7 @@
 ﻿namespace CNN.BL.Utils
 {
     using System.Drawing;
+    using System.Threading;
     using System.IO;
     using System;
 
@@ -22,7 +23,26 @@
         /// <param name="imagePath">Путь до изображения.</param>
         public ImageConverterUtil(string imagePath)
         {
-            var image = new Bitmap(imagePath);
+            Bitmap image;
+
+            try
+            {
+                image = new Bitmap(imagePath);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ConsoleMessageConstants.ERROR_MESSAGE + ex.ToString());
+                Console.WriteLine(ConsoleMessageConstants.PRESS_ANY_KEY_MESSAGE);
+
+                Console.ReadKey();
+
+                Console.WriteLine(ConsoleMessageConstants.EXIT_MESSAGE);
+
+                Thread.Sleep(500);
+                Environment.Exit(0);
+
+                return;
+            }
 
             if (image.Size.Height != MatrixConstants.MATRIX_SIZE ||
                 image.Size.Width != MatrixConstants.MATRIX_SIZE)

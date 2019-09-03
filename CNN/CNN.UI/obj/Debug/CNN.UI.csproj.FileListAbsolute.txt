@@ -9,3 +9,4 @@ C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.UI\obj\Debug\CNN.UI.c
 C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.UI\obj\Debug\CNN.UI.csproj.CoreCompileInputs.cache
 C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.UI\obj\Debug\CNN.UI.exe
 C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.UI\obj\Debug\CNN.UI.pdb
+C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.UI\bin\Debug\Resources\1.bmp
