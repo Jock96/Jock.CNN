@@ -64,10 +64,10 @@
         /// Конвертировать изображение в матрицу значений.
         /// </summary>
         /// <returns>Возвращает матрицу значений.</returns>
-        public int [,] ConvertImageToMatrix()
+        public double [,] ConvertImageToMatrix()
         {
             var size = _image.Size;
-            var matrix = new int[size.Width, size.Height];
+            var matrix = new double[size.Width, size.Height];
 
             for (var xIndex = 0; xIndex < size.Width; ++xIndex)
                 for (var yIndex = 0; yIndex < size.Height; ++yIndex)

@@ -7,6 +7,7 @@
     using CNN.BL.Utils;
 
     using CNN.Core;
+    using CNN.Core.Layers;
 
     /// <summary>
     /// Класс входной точки приложения.
@@ -33,15 +34,38 @@
             var path = Path.Combine(pathToResources, fileName + FileConstants.IMAGE_EXTENSION);
 
             var converter = new ImageConverterUtil(path);
-            var matrix = converter.ConvertImageToMatrix();
+            var matrixOfPicture = converter.ConvertImageToMatrix();
 
             var filterCore = FilterCore.Initialize();
+            var inputLayer = new InputLayer(matrixOfPicture);
+
+            inputLayer.FillInputLayer();
+            var inputLayerWeights = inputLayer.GetNeuronOutputs();
 
             // TODO: Отладка, убрать.
-            foreach (var value in filterCore)
-                Console.WriteLine(value.ToString());
+            GetDebugInfo(filterCore, inputLayerWeights);
 
             Console.ReadKey();
+        }
+
+        /// <summary>
+        /// Выводит отладочную информацию.
+        /// </summary>
+        /// <param name="filterCore">Ядро фильра.</param>
+        /// <param name="inputLayerWeights">Вывод входного слоя.</param>
+        private static void GetDebugInfo(double[,] filterCore, System.Collections.Generic.Dictionary<string, double> inputLayerWeights)
+        {
+            Console.WriteLine("Ядро фильтра:");
+
+            foreach (var value in filterCore)
+                Console.Write(value.ToString() + " ");
+
+            Console.WriteLine("\nЗначения входного слоя:");
+
+            foreach (var value in inputLayerWeights)
+            {
+                Console.WriteLine(value.Key.ToString() + ": " + value.Value.ToString());
+            }
         }
     }
 }

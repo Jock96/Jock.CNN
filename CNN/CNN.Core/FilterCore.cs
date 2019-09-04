@@ -30,5 +30,14 @@
 
             return _value;
         }
+
+        /// <summary>
+        /// Обновляет значение в ядре на указанную матрицу.
+        /// </summary>
+        /// <param name="matrixOfValues"></param>
+        public static void UpdateValues(double[,] matrixOfValues)
+        {
+            _value = matrixOfValues;
+        }
     }
 }
