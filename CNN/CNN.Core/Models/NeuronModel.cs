@@ -19,6 +19,20 @@
             _weights = weights;
         }
 
+        #region Данные для обучения.
+
+        /// <summary>
+        /// Значение дельты веса.
+        /// </summary>
+        public double Delta { get; set; }
+
+        /// <summary>
+        /// Прошлое значение весов.
+        /// </summary>
+        public List<double> LastWeights { get; set; }
+
+        #endregion
+
         #region Работа с данными
 
         /// <summary>

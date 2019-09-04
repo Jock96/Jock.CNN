@@ -1,6 +1,8 @@
 ﻿namespace CNN.Core.Layers
 {
     using CNN.BL.Enums;
+    using CNN.Core.Models;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Слой нейронной сети.

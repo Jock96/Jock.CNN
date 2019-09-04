@@ -19,12 +19,17 @@
         /// <summary>
         /// Сообщение ввода имени файла.
         /// </summary>
-        public const string FILE_NAME_MESSAGE = "Введите имя файла с изображением:";
+        public const string FILE_NAME_MESSAGE = "Введите имя файла с изображением: ";
 
         /// <summary>
         /// Сообщение ошибки.
         /// </summary>
         public const string ERROR_MESSAGE = "Ошибка: ";
+
+        /// <summary>
+        /// Сообщение информации.
+        /// </summary>
+        public const string INFO_MESSAGE = "Инфомрация: ";
 
         /// <summary>
         /// Сообщения выхода.

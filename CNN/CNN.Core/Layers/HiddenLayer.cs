@@ -14,7 +14,7 @@
         /// <summary>
         /// Список нейронов скрытого слоя.
         /// </summary>
-        private List<NeuronModel> _convolutionalLayer;
+        private List<NeuronModel> _convolutionalLayerData;
 
         /// <summary>
         /// Данные скрытого слоя.
@@ -32,7 +32,7 @@
         /// <param name="convolutionalLayer">Данные свёрточного слоя.</param>
         public HiddenLayer(List<NeuronModel> convolutionalLayer)
         {
-            _convolutionalLayer = convolutionalLayer;
+            _convolutionalLayerData = convolutionalLayer;
         }
 
         /// <summary>
@@ -42,7 +42,7 @@
         {
             _hiddenLayerData = new List<NeuronModel>();
 
-            var countOfNeuronsInHiddenLayer = (int)_convolutionalLayer.Count / 2;
+            var countOfNeuronsInHiddenLayer = (int)_convolutionalLayerData.Count / 2;
 
             for (var index = 0; index < countOfNeuronsInHiddenLayer; ++index)
                 _hiddenLayerData.Add(CreateNeuronByData());
@@ -63,7 +63,7 @@
             var inputs = new List<double>();
             var weights = new List<double>();
 
-            foreach (var neuron in _convolutionalLayer)
+            foreach (var neuron in _convolutionalLayerData)
             {
                 inputs.Add(neuron.Output);
                 weights.Add(GetInitializedWeight());
@@ -78,5 +78,17 @@
         /// </summary>
         /// <returns>Возвращает случайный вес.</returns>
         private double GetInitializedWeight() => new Random().NextDouble();
+
+        #region Обновление значений нейронов.
+
+        /// <summary>
+        /// Обновление дельт нейронов.
+        /// </summary>
+        /// <param name="deltas">Список дельт.</param>
+        public void UpdateDeltas(List<double> deltas) => 
+            _hiddenLayerData.ForEach(neuron =>
+            neuron.Delta = deltas[_hiddenLayerData.IndexOf(neuron)]);
+
+        #endregion
     }
 }

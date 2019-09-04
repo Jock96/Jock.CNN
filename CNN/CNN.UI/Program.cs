@@ -29,7 +29,7 @@
 
             Console.ReadKey();
 
-            Console.WriteLine(ConsoleMessageConstants.FILE_NAME_MESSAGE);
+            Console.Write(ConsoleMessageConstants.FILE_NAME_MESSAGE);
 
             var fileName = Console.ReadLine();
             var pathToResources = BL.Helpers.PathHelper.GetResourcesPath();
@@ -44,7 +44,8 @@
                 Alpha = 0.1,
                 Epsilon = 0.1,
                 EpochCount = 2,
-                IdealResult = 1
+                IdealResult = 1,
+                IterationsInEpochCount = 1
             };
 
             var layers = new List<Layer>();
@@ -57,6 +58,9 @@
                 out NeuronModel outputNeuron);
 
             var learningUtil = new LearningUtil(layers, configuration);
+            learningUtil.StartToLearn();
+
+            return;
 
             // TODO: Отладка, убрать.
             GetDebugInfo(filterCore, inputLayerWeights,

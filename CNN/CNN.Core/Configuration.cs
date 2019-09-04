@@ -24,5 +24,10 @@
         /// Момент.
         /// </summary>
         public double Alpha { get; set; } = 0.1;
+
+        /// <summary>
+        /// Количество итераций в одной эпохе.
+        /// </summary>
+        public int IterationsInEpochCount { get; set; } = 1;
     }
 }

@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using CNN.BL.Enums;
     using Models;
+    using CNN.Core.Extensions;
 
     /// <summary>
     /// Класс выходного слоя.
@@ -25,6 +26,10 @@
         /// </summary>
         public override LayerType LayerType => LayerType.Output;
 
+        /// <summary>
+        /// Класс выходного слоя.
+        /// </summary>
+        /// <param name="hiddenLayerData">Значения скрытого слоя.</param>
         public OutputLayer(List<NeuronModel> hiddenLayerData)
         {
             _hiddenLayerData = hiddenLayerData;
@@ -46,6 +51,24 @@
 
             _outputNeuron = new NeuronModel(inputs, weights);
         }
+
+        /// <summary>
+        /// Обновить веса нейрона на слое.
+        /// </summary>
+        /// <param name="updatedWeights">Обновлённые веса.</param>
+        public void UpdateWeightsOfNeuronInLayer(List<double> updatedWeights) => _outputNeuron.UpdateWeights(updatedWeights);
+
+        /// <summary>
+        /// Обновить дельту нейрона на слое.
+        /// </summary>
+        /// <param name="delta">Дельта</param>
+        public void UpdateDeltaOfNeuronInLayer(double delta) => _outputNeuron.Delta = delta;
+
+        /// <summary>
+        /// Обновить входные значения у нейрона на слое.
+        /// </summary>
+        /// <param name="inputs"></param>
+        public void UpdateNeuronInputs(List<double> inputs) => _outputNeuron.Inputs = inputs;
 
         /// <summary>
         /// Инициализация случайных весов.
