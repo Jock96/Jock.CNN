@@ -44,12 +44,17 @@
             var inputLayerWeights = inputLayer.GetNeuronOutputs();
 
             var convolutionalLayer = new ConvolutionalLayer(inputLayerWeights);
-            convolutionalLayer.LayerInitialize(filterCore);
+            convolutionalLayer.Initialize(filterCore);
 
             var convolutionalLayerNeurons = convolutionalLayer.GetLayerNeurons();
 
+            var hiddenLayer = new HiddenLayer(convolutionalLayerNeurons);
+            hiddenLayer.Initialize();
+
+            var hiddenLayerNeurons = hiddenLayer.GetLayerNeurons();
+
             // TODO: Отладка, убрать.
-            GetDebugInfo(filterCore, inputLayerWeights, convolutionalLayerNeurons);
+            GetDebugInfo(filterCore, inputLayerWeights, convolutionalLayerNeurons, hiddenLayerNeurons);
 
             Console.ReadKey();
         }
@@ -60,9 +65,11 @@
         /// <param name="filterCore">Ядро фильра.</param>
         /// <param name="inputLayerWeights">Вывод входного слоя.</param>
         /// <param name="convolutionalLayerNeurons">Нейроны свёрточного слоя.</param>
+        /// <param name="hiddenLayerNeurons">Нейроны скрытого слоя.</param>
         private static void GetDebugInfo(double[,] filterCore, 
             Dictionary<string, double> inputLayerWeights, 
-            List<NeuronModel> convolutionalLayerNeurons)
+            List<NeuronModel> convolutionalLayerNeurons,
+            List<NeuronModel> hiddenLayerNeurons)
         {
             Console.WriteLine("Ядро фильтра:");
 
@@ -74,8 +81,16 @@
             foreach (var value in inputLayerWeights)
                 Console.WriteLine(value.Key.ToString() + ": " + value.Value.ToString());
 
+            Console.WriteLine("\nЗначения свёрточного слоя:");
+
             foreach (var value in convolutionalLayerNeurons)
                 Console.WriteLine(convolutionalLayerNeurons.IndexOf(value).ToString() +
+                    ": " + value.Output.ToString());
+
+            Console.WriteLine("\nЗначения скрытого слоя:");
+
+            foreach (var value in hiddenLayerNeurons)
+                Console.WriteLine(hiddenLayerNeurons.IndexOf(value).ToString() +
                     ": " + value.Output.ToString());
         }
     }

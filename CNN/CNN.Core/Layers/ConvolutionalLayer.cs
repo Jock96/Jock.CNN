@@ -35,7 +35,7 @@
         /// Инициализацяи свёрточного слоя.
         /// </summary>
         /// <param name="filterCore">Ядро фильтра.</param>
-        public void LayerInitialize(double[,] filterCore)
+        public void Initialize(double[,] filterCore)
         {
             _convolutionalLayerData = new List<NeuronModel>();
 
