@@ -38,10 +38,11 @@
             var matrixOfPicture = converter.ConvertImageToMatrix();
 
             var filterCore = FilterCoreModel.Initialize();
-            var inputLayer = new InputLayer(matrixOfPicture);
 
-            inputLayer.FillInputLayer();
-            var inputLayerWeights = inputLayer.GetNeuronOutputs();
+            var inputLayer = new InputLayer(matrixOfPicture);
+            inputLayer.Initialize();
+
+            var inputLayerWeights = inputLayer.GetLayerNeurons();
 
             var convolutionalLayer = new ConvolutionalLayer(inputLayerWeights);
             convolutionalLayer.Initialize(filterCore);
@@ -53,8 +54,14 @@
 
             var hiddenLayerNeurons = hiddenLayer.GetLayerNeurons();
 
+            var outputLayer = new OutputLayer(hiddenLayerNeurons);
+            outputLayer.Initilize();
+
+            var outputNeuron = outputLayer.GetOutputNeuron();
+
             // TODO: Отладка, убрать.
-            GetDebugInfo(filterCore, inputLayerWeights, convolutionalLayerNeurons, hiddenLayerNeurons);
+            GetDebugInfo(filterCore, inputLayerWeights,
+                convolutionalLayerNeurons, hiddenLayerNeurons, outputNeuron);
 
             Console.ReadKey();
         }
@@ -66,10 +73,11 @@
         /// <param name="inputLayerWeights">Вывод входного слоя.</param>
         /// <param name="convolutionalLayerNeurons">Нейроны свёрточного слоя.</param>
         /// <param name="hiddenLayerNeurons">Нейроны скрытого слоя.</param>
+        /// <param name="outputNeuron">Выходной нейрон.</param>
         private static void GetDebugInfo(double[,] filterCore, 
             Dictionary<string, double> inputLayerWeights, 
             List<NeuronModel> convolutionalLayerNeurons,
-            List<NeuronModel> hiddenLayerNeurons)
+            List<NeuronModel> hiddenLayerNeurons, NeuronModel outputNeuron)
         {
             Console.WriteLine("Ядро фильтра:");
 
@@ -92,6 +100,9 @@
             foreach (var value in hiddenLayerNeurons)
                 Console.WriteLine(hiddenLayerNeurons.IndexOf(value).ToString() +
                     ": " + value.Output.ToString());
+
+            Console.WriteLine("\nЗначения выходного нейрона:");
+            Console.WriteLine(outputNeuron.Output);
         }
     }
 }

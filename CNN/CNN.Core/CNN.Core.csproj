@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="Layers\ConvolutionalLayer.cs" />
     <Compile Include="Layers\HiddenLayer.cs" />
+    <Compile Include="Layers\OutputLayer.cs" />
     <Compile Include="Models\FilterCoreModel.cs" />
     <Compile Include="Layers\InputLayer.cs" />
     <Compile Include="Models\NeuronModel.cs" />

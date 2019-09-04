@@ -30,7 +30,7 @@
         /// <summary>
         /// Заполняем входной слой переданными значениями.
         /// </summary>
-        public void FillInputLayer()
+        public void Initialize()
         {
             _neurons = new Dictionary<string, double>();
 
@@ -49,6 +49,6 @@
         /// Возвращает список выходов всех нейронов.
         /// </summary>
         /// <returns>Возвращает словарь значений с их позициями.</returns>
-        public Dictionary<string, double> GetNeuronOutputs() => _neurons;
+        public Dictionary<string, double> GetLayerNeurons() => _neurons;
     }
 }
