@@ -2,11 +2,12 @@
 {
     using System;
     using System.IO;
+    using System.Collections.Generic;
 
     using CNN.BL.Constants;
     using CNN.BL.Utils;
 
-    using CNN.Core;
+    using CNN.Core.Models;
     using CNN.Core.Layers;
 
     /// <summary>
@@ -36,14 +37,19 @@
             var converter = new ImageConverterUtil(path);
             var matrixOfPicture = converter.ConvertImageToMatrix();
 
-            var filterCore = FilterCore.Initialize();
+            var filterCore = FilterCoreModel.Initialize();
             var inputLayer = new InputLayer(matrixOfPicture);
 
             inputLayer.FillInputLayer();
             var inputLayerWeights = inputLayer.GetNeuronOutputs();
 
+            var convolutionalLayer = new ConvolutionalLayer(inputLayerWeights);
+            convolutionalLayer.LayerInitialize(filterCore);
+
+            var convolutionalLayerNeurons = convolutionalLayer.GetLayerNeurons();
+
             // TODO: Отладка, убрать.
-            GetDebugInfo(filterCore, inputLayerWeights);
+            GetDebugInfo(filterCore, inputLayerWeights, convolutionalLayerNeurons);
 
             Console.ReadKey();
         }
@@ -53,7 +59,10 @@
         /// </summary>
         /// <param name="filterCore">Ядро фильра.</param>
         /// <param name="inputLayerWeights">Вывод входного слоя.</param>
-        private static void GetDebugInfo(double[,] filterCore, System.Collections.Generic.Dictionary<string, double> inputLayerWeights)
+        /// <param name="convolutionalLayerNeurons">Нейроны свёрточного слоя.</param>
+        private static void GetDebugInfo(double[,] filterCore, 
+            Dictionary<string, double> inputLayerWeights, 
+            List<NeuronModel> convolutionalLayerNeurons)
         {
             Console.WriteLine("Ядро фильтра:");
 
@@ -63,9 +72,11 @@
             Console.WriteLine("\nЗначения входного слоя:");
 
             foreach (var value in inputLayerWeights)
-            {
                 Console.WriteLine(value.Key.ToString() + ": " + value.Value.ToString());
-            }
+
+            foreach (var value in convolutionalLayerNeurons)
+                Console.WriteLine(convolutionalLayerNeurons.IndexOf(value).ToString() +
+                    ": " + value.Output.ToString());
         }
     }
 }

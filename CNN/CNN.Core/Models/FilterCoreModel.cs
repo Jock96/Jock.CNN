@@ -1,4 +1,4 @@
-﻿namespace CNN.Core
+﻿namespace CNN.Core.Models
 {
     using System;
 
@@ -7,7 +7,7 @@
     /// <summary>
     /// Класс ядра фильтра.
     /// </summary>
-    public static class FilterCore
+    public static class FilterCoreModel
     {
         /// <summary>
         /// Значение ядра фильтра.

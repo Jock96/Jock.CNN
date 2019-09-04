@@ -1,4 +1,4 @@
-﻿namespace CNN.Core
+﻿namespace CNN.Core.Models
 {
     using System;
     using System.Collections.Generic;
@@ -6,14 +6,14 @@
     /// <summary>
     /// Класс нейрона.
     /// </summary>
-    public class Neuron
+    public class NeuronModel
     {
         /// <summary>
         /// Класс нейрона.
         /// </summary>
         /// <param name="inputs">Входные данные.</param>
         /// <param name="weights">Веса.</param>
-        public Neuron(List<double> inputs, List<double> weights)
+        public NeuronModel(List<double> inputs, List<double> weights)
         {
             _inputs = inputs;
             _weights = weights;
