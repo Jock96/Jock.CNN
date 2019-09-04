@@ -3,11 +3,12 @@
     using System.Collections.Generic;
 
     using CNN.BL.Constants;
+    using CNN.BL.Enums;
 
     /// <summary>
     /// Класс входного слоя.
     /// </summary>
-    public class InputLayer
+    public class InputLayer : Layer
     {
         /// <summary>
         /// Список нейронов входного слоя.
@@ -18,6 +19,11 @@
         /// Полученные данные.
         /// </summary>
         private double[,] _dataSet;
+
+        /// <summary>
+        /// Тип слоя.
+        /// </summary>
+        public override LayerType LayerType => LayerType.Input;
 
         /// <summary>
         /// Класс входного слоя.

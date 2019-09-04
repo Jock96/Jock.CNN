@@ -6,11 +6,12 @@
     using CNN.BL.Constants;
 
     using Models;
+    using CNN.BL.Enums;
 
     /// <summary>
     /// Класс свёрточного слоя.
     /// </summary>
-    public class ConvolutionalLayer
+    public class ConvolutionalLayer : Layer
     {
         /// <summary>
         /// Данные входного слоя.
@@ -21,6 +22,11 @@
         /// Данные свёрточного слоя.
         /// </summary>
         private List<NeuronModel> _convolutionalLayerData;
+
+        /// <summary>
+        /// Тип слоя.
+        /// </summary>
+        public override LayerType LayerType => LayerType.Convolutional;
 
         /// <summary>
         /// Класс свёрточного слоя.

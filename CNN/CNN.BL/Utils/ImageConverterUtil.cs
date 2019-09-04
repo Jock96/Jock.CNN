@@ -102,7 +102,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error: {ex.ToString()}");
+                Console.WriteLine($"{ConsoleMessageConstants.ERROR_MESSAGE}{ex.ToString()}");
                 return null;
             }
         }

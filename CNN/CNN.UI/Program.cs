@@ -9,6 +9,8 @@
 
     using CNN.Core.Models;
     using CNN.Core.Layers;
+    using CNN.Core;
+    using CNN.Core.Utils;
 
     /// <summary>
     /// Класс входной точки приложения.
@@ -37,33 +39,68 @@
             var converter = new ImageConverterUtil(path);
             var matrixOfPicture = converter.ConvertImageToMatrix();
 
+            var configuration = new Configuration
+            {
+                Alpha = 0.1,
+                Epsilon = 0.1,
+                EpochCount = 2,
+                IdealResult = 1
+            };
+
+            var layers = new List<Layer>();
             var filterCore = FilterCoreModel.Initialize();
 
-            var inputLayer = new InputLayer(matrixOfPicture);
-            inputLayer.Initialize();
+            LayersInitialize(matrixOfPicture, layers, filterCore,
+                out Dictionary<string, double> inputLayerWeights,
+                out List<NeuronModel> convolutionalLayerNeurons,
+                out List<NeuronModel> hiddenLayerNeurons,
+                out NeuronModel outputNeuron);
 
-            var inputLayerWeights = inputLayer.GetLayerNeurons();
-
-            var convolutionalLayer = new ConvolutionalLayer(inputLayerWeights);
-            convolutionalLayer.Initialize(filterCore);
-
-            var convolutionalLayerNeurons = convolutionalLayer.GetLayerNeurons();
-
-            var hiddenLayer = new HiddenLayer(convolutionalLayerNeurons);
-            hiddenLayer.Initialize();
-
-            var hiddenLayerNeurons = hiddenLayer.GetLayerNeurons();
-
-            var outputLayer = new OutputLayer(hiddenLayerNeurons);
-            outputLayer.Initilize();
-
-            var outputNeuron = outputLayer.GetOutputNeuron();
+            var learningUtil = new LearningUtil(layers, configuration);
 
             // TODO: Отладка, убрать.
             GetDebugInfo(filterCore, inputLayerWeights,
                 convolutionalLayerNeurons, hiddenLayerNeurons, outputNeuron);
 
             Console.ReadKey();
+        }
+
+        /// <summary>
+        /// Инициализация слоёв нейронной сети.
+        /// </summary>
+        /// <param name="matrixOfPicture">Матрица изображений.</param>
+        /// <param name="layers">Список слоёв.</param>
+        /// <param name="filterCore">Ядро фильтра.</param>
+        /// <param name="inputLayerNeurons">Нейроны выходного слоя.</param>
+        /// <param name="convolutionalLayerNeurons">Нейроны свёрточного слоя.</param>
+        /// <param name="hiddenLayerNeurons">Нейроны скрытого слоя.</param>
+        /// <param name="outputNeuron">Нейроны выходного слоя.</param>
+        private static void LayersInitialize(double[,] matrixOfPicture, List<Layer> layers, double[,] filterCore, out Dictionary<string, double> inputLayerNeurons, out List<NeuronModel> convolutionalLayerNeurons, out List<NeuronModel> hiddenLayerNeurons, out NeuronModel outputNeuron)
+        {
+            var inputLayer = new InputLayer(matrixOfPicture);
+
+            inputLayer.Initialize();
+            layers.Add(inputLayer);
+
+            inputLayerNeurons = inputLayer.GetLayerNeurons();
+            var convolutionalLayer = new ConvolutionalLayer(inputLayerNeurons);
+
+            convolutionalLayer.Initialize(filterCore);
+            layers.Add(convolutionalLayer);
+
+            convolutionalLayerNeurons = convolutionalLayer.GetLayerNeurons();
+            var hiddenLayer = new HiddenLayer(convolutionalLayerNeurons);
+
+            hiddenLayer.Initialize();
+            layers.Add(hiddenLayer);
+
+            hiddenLayerNeurons = hiddenLayer.GetLayerNeurons();
+            var outputLayer = new OutputLayer(hiddenLayerNeurons);
+
+            outputLayer.Initilize();
+            layers.Add(outputLayer);
+
+            outputNeuron = outputLayer.GetOutputNeuron();
         }
 
         /// <summary>
@@ -101,7 +138,7 @@
                 Console.WriteLine(hiddenLayerNeurons.IndexOf(value).ToString() +
                     ": " + value.Output.ToString());
 
-            Console.WriteLine("\nЗначения выходного нейрона:");
+            Console.WriteLine("\nЗначение выходного нейрона:");
             Console.WriteLine(outputNeuron.Output);
         }
     }

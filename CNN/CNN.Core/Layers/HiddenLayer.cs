@@ -1,14 +1,15 @@
 ﻿namespace CNN.Core.Layers
 {
     using CNN.Core.Models;
-    
+
     using System.Collections.Generic;
     using System;
+    using CNN.BL.Enums;
 
     /// <summary>
     /// Класс скрытого слоя.
     /// </summary>
-    public class HiddenLayer
+    public class HiddenLayer : Layer
     {
         /// <summary>
         /// Список нейронов скрытого слоя.
@@ -19,6 +20,11 @@
         /// Данные скрытого слоя.
         /// </summary>
         private List<NeuronModel> _hiddenLayerData;
+
+        /// <summary>
+        /// Тип слоя.
+        /// </summary>
+        public override LayerType LayerType => LayerType.Hidden;
 
         /// <summary>
         /// Класс скрытого слоя.

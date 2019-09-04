@@ -2,13 +2,13 @@
 {
     using System;
     using System.Collections.Generic;
-
+    using CNN.BL.Enums;
     using Models;
 
     /// <summary>
     /// Класс выходного слоя.
     /// </summary>
-    public class OutputLayer
+    public class OutputLayer : Layer
     {
         /// <summary>
         /// Значения скрытого слоя.
@@ -19,6 +19,11 @@
         /// Значение выходного нейрона.
         /// </summary>
         private NeuronModel _outputNeuron;
+
+        /// <summary>
+        /// Тип слоя.
+        /// </summary>
+        public override LayerType LayerType => LayerType.Output;
 
         public OutputLayer(List<NeuronModel> hiddenLayerData)
         {
