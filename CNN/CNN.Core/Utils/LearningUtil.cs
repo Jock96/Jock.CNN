@@ -40,8 +40,9 @@
             _configuration = configuration;
         }
 
-        // Метод обучения (эпохи и итерации)
-
+        /// <summary>
+        /// Инициализация обучения нейронной сети.
+        /// </summary>
         public void StartToLearn()
         {
             var errorValue = 0d;
@@ -50,42 +51,216 @@
             {
                 for (var iteration = 0; iteration < _configuration.IterationsInEpochCount; ++iteration)
                 {
-                    // Обратное распространение.
+                    var outputLayer = (OutputLayer)_layers.Find(layer =>
+                    layer.LayerType.Equals(LayerType.Output));
 
-                    Backpropagation();
+                    var hiddenLayer = (HiddenLayer)_layers.Find(layer =>
+                    layer.LayerType.Equals(LayerType.Hidden));
 
-                    var outputLayer = (OutputLayer)_layers.Find(layer => layer.LayerType.Equals(LayerType.Output));
+                    var convolutionalLayer = (ConvolutionalLayer)_layers.Find(layer =>
+                    layer.LayerType.Equals(LayerType.Convolutional));
+
+                    var inputLayer = (InputLayer)_layers.Find(layer =>
+                    layer.LayerType.Equals(LayerType.Input));
+
                     var outputValue = outputLayer.GetOutputNeuron().Output;
-
                     errorValue = ErrorByRootMSE(epochIndex, outputValue);
 
+                    Backpropagation(inputLayer, convolutionalLayer, hiddenLayer, outputLayer);
                     GetOutputCallback(outputValue, errorValue, epochIndex, iteration);
+
+                    LayersUpdate(outputLayer, hiddenLayer, convolutionalLayer, inputLayer);
                 }
             }
         }
 
-        #region Расчёты по методу обрабтного распространения.
-
-        private void Backpropagation()
+        /// <summary>
+        /// Обновить слои.
+        /// </summary>
+        /// <param name="outputLayer">Выходной слой.</param>
+        /// <param name="hiddenLayer">Скрытый слой.</param>
+        /// <param name="convolutionalLayer">Свёрточный слой.</param>
+        /// <param name="inputLayer">Входной слой.</param>
+        private void LayersUpdate(OutputLayer outputLayer, HiddenLayer hiddenLayer, ConvolutionalLayer convolutionalLayer, InputLayer inputLayer)
         {
-            var outputLayer = (OutputLayer)_layers.Find(layer => layer.LayerType.Equals(LayerType.Output));
-            var hiddenLayer = (HiddenLayer)_layers.Find(layer => layer.LayerType.Equals(LayerType.Hidden));
-            var convolutionalLayer = (ConvolutionalLayer)_layers.Find(layer => layer.LayerType.Equals(LayerType.Convolutional));
-            var inputLayer = (InputLayer)_layers.Find(layer => layer.LayerType.Equals(LayerType.Input));
+            if (_configuration.IterationsInEpochCount > 1)
+            {
+                // Задать новые значения входного слоя.
+            }
 
+            convolutionalLayer.UpdateData(FilterCoreModel.GetCore, inputLayer.GetLayerNeurons());
+
+            var inputsToHiddenLayer = new List<double>();
+
+            convolutionalLayer.GetLayerNeurons().ForEach(neuron =>
+            inputsToHiddenLayer.Add(neuron.Output));
+
+            hiddenLayer.UpdateNeuronsInputs(inputsToHiddenLayer);
+
+            var inputsToOutputLayer = new List<double>();
+
+            hiddenLayer.GetLayerNeurons().ForEach(neuron =>
+            inputsToOutputLayer.Add(neuron.Output));
+
+            outputLayer.UpdateNeuronInputs(inputsToOutputLayer);
+        }
+
+        #region Расчёты по методу обратного распространения.
+
+        /// <summary>
+        /// Метод обратного распространения ошибки.
+        /// </summary>
+        /// <param name="inputLayer">Входной слой.</param>
+        /// <param name="convolutionalLayer">Свёрточный слой.</param>
+        /// <param name="hiddenLayer">Скрытый слой.</param>
+        /// <param name="outputLayer">Выходной слой.</param>
+        private void Backpropagation(InputLayer inputLayer, ConvolutionalLayer convolutionalLayer,
+            HiddenLayer hiddenLayer, OutputLayer outputLayer)
+        {
             HiddenToOutputDeltasWork(outputLayer, hiddenLayer);
             HiddentToOutputWeightsWork(outputLayer, hiddenLayer);
 
             ConvolutionalToHiddenDeltasWork(hiddenLayer, convolutionalLayer);
             ConvolutionalToHiddenWeightsWork(hiddenLayer, convolutionalLayer);
 
-            // Обновить веса между свёрточным и выходом (обновить ядро).
+            // TODO: В ядре всё по нулям.
+            FilterCoreWork(convolutionalLayer, inputLayer);
+        }
 
-            // Для свёртончного - 
-            // подсчитывается общая ошибка для каждого значения
-            // в ядре фильтра (в общем их 9 у меня), 
-            // К каждому из ядра прибавляется общая сумма
-            // соответствующей ячейки в своей позиции
+        /// <summary>
+        /// Выполнить вычисления для ядра фильтра.
+        /// </summary>
+        /// <param name="convolutionalLayer">Свёрточный слой.</param>
+        /// <param name="inputLayer">Входной слой.</param>
+        private void FilterCoreWork(ConvolutionalLayer convolutionalLayer, InputLayer inputLayer)
+        {
+            var inputLayerNeurons = inputLayer.GetLayerNeurons();
+            var convolutionalLayerDeltas = new List<double>();
+
+            convolutionalLayer.GetLayerNeurons().ForEach(neuron => convolutionalLayerDeltas.Add(neuron.Delta));
+
+            var filterCoreMatrixOfMiddleDeltas = GetFilterCoreMiddleDeltasMatrix(
+                inputLayerNeurons, convolutionalLayerDeltas);
+
+            var filterCoreMatrixOfMiddleGradients = GetFilterCoreMiddleGradientMatrix(
+                filterCoreMatrixOfMiddleDeltas, inputLayerNeurons);
+
+            UpdateCore(filterCoreMatrixOfMiddleGradients);
+        }
+
+        /// <summary>
+        /// Обновить ядро фильтра.
+        /// </summary>
+        /// <param name="gradients">Матрица градиентов.</param>
+        private void UpdateCore(double[,] gradients)
+        {
+            var updatedCore = new double[MatrixConstants.FILTER_MATRIX_SIZE,
+                MatrixConstants.FILTER_MATRIX_SIZE];
+
+            for (var xIndex = 0; xIndex < MatrixConstants.FILTER_MATRIX_SIZE; ++xIndex)
+                for (var yIndex = 0; yIndex < MatrixConstants.FILTER_MATRIX_SIZE; ++yIndex)
+                {
+                    updatedCore[xIndex, yIndex] = _configuration.Epsilon *
+                        gradients[xIndex, yIndex] + _configuration.Alpha *
+                        FilterCoreModel.LastCoreValue[xIndex, yIndex];
+                }
+
+            FilterCoreModel.UpdateCore(updatedCore);
+        }
+
+        /// <summary>
+        /// Получить матрицу средних градиентов.
+        /// </summary>
+        /// <param name="filterCoreMatrixOfMiddleDeltas">Матрицасредних дельт.</param>
+        /// <param name="inputLayerData">Данные входного слоя.</param>
+        /// <returns>Возвращает матрицу средних градиентов.</returns>
+        private double[,] GetFilterCoreMiddleGradientMatrix(
+            double[,] filterCoreMatrixOfMiddleDeltas, Dictionary<string, double> inputLayerData)
+        {
+            var middleGradientMatrix = new double[MatrixConstants.FILTER_MATRIX_SIZE,
+                MatrixConstants.FILTER_MATRIX_SIZE];
+
+            for (var xIndex = 0; xIndex < MatrixConstants.FILTER_MATRIX_SIZE; ++xIndex)
+                for (var yIndex = 0; yIndex < MatrixConstants.FILTER_MATRIX_SIZE; ++yIndex)
+                {
+                    var valuesFromInputData = GetMatrixOfValuesFromInputData(inputLayerData,
+                        xIndex, yIndex);
+
+                    var summary = 0d;
+                    foreach (var value in valuesFromInputData)
+                    {
+                        summary += value;
+                    }
+
+                    var middleGradient = filterCoreMatrixOfMiddleDeltas[xIndex, yIndex] * summary;
+                }
+
+            return middleGradientMatrix;
+        }
+
+        /// <summary>
+        /// Получить значения средних дельт для ядра фильтра.
+        /// </summary>
+        /// <param name="inputLayerData">Данные входного слоя.</param>
+        /// <param name="convolutionalLayerDeltas">Дельты свёрточного слоя.</param>
+        /// <returns>Возвращает матрицу средньких дельт для ядра фильтра.</returns>
+        private double[,] GetFilterCoreMiddleDeltasMatrix(Dictionary<string, double> inputLayerData,
+            List<double> convolutionalLayerDeltas)
+        {
+            var middleDeltasMatrix = new double[MatrixConstants.FILTER_MATRIX_SIZE,
+                MatrixConstants.FILTER_MATRIX_SIZE];
+
+            var countOfNeurons = Math.Pow(MatrixConstants.FILTER_MATRIX_SIZE, 2);
+            var summaryOfHiddenLayerDeltas = 0d;
+
+            convolutionalLayerDeltas.ForEach(delta => summaryOfHiddenLayerDeltas += delta);
+
+            for (var xIndex = 0; xIndex < MatrixConstants.FILTER_MATRIX_SIZE; ++xIndex)
+                for (var yIndex = 0; yIndex < MatrixConstants.FILTER_MATRIX_SIZE; ++yIndex)
+                {
+                    var valuesFromInputData = GetMatrixOfValuesFromInputData(inputLayerData,
+                        xIndex, yIndex);
+
+                    foreach (var output in valuesFromInputData)
+                    {
+                        var middleDelta = DerivativeActivationFunction(output) * 
+                            summaryOfHiddenLayerDeltas * 
+                            FilterCoreModel.GetCore[xIndex, yIndex];
+
+                        middleDeltasMatrix[xIndex, yIndex] = middleDelta;
+                    }
+                }
+
+            return middleDeltasMatrix;
+        }
+
+        /// <summary>
+        /// Получить матрицу значений из входного слоя.
+        /// </summary>
+        /// <param name="inputLayerData">Значения входного слоя.</param>
+        /// <param name="xPositionInFilterCore">Позиция по X.</param>
+        /// <param name="yPositionInFilterCore">Позиция по Y.</param>
+        /// <returns></returns>
+        private double[,] GetMatrixOfValuesFromInputData(Dictionary<string, double> inputLayerData,
+            int xPositionInFilterCore, int yPositionInFilterCore)
+        {
+            var valuesFromInputData = new double[MatrixConstants.FILTER_MATRIX_SIZE,
+                        MatrixConstants.FILTER_MATRIX_SIZE];
+
+            for (var xIndex = 0; xIndex < MatrixConstants.FILTER_MATRIX_SIZE; ++xIndex)
+                for (var yIndex = 0; yIndex < MatrixConstants.FILTER_MATRIX_SIZE; ++yIndex)
+                {
+                    var locationString = $"{MatrixConstants.POSITION_IN_X_AXIS}" +
+                        $"{xPositionInFilterCore + xIndex}" +
+                        $"{MatrixConstants.KEY_SEPARATOR}" +
+                        $"{MatrixConstants.POSITION_IN_Y_AXIS}" +
+                        $"{yPositionInFilterCore + yIndex}";
+
+                    inputLayerData.TryGetValue(locationString, out var data);
+                    valuesFromInputData[xIndex, yIndex] = data;
+                }
+
+            return valuesFromInputData;
         }
 
         /// <summary>

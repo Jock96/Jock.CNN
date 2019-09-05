@@ -52,6 +52,16 @@
         }
 
         /// <summary>
+        /// Обновить значения входного слоя.
+        /// </summary>
+        /// <param name="dataSet">Данные.</param>
+        public void UpdateInputData(double[,] dataSet)
+        {
+            _dataSet = dataSet;
+            Initialize();
+        }
+
+        /// <summary>
         /// Возвращает список выходов всех нейронов.
         /// </summary>
         /// <returns>Возвращает словарь значений с их позициями.</returns>

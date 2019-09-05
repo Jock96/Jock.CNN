@@ -122,6 +122,13 @@
             }
         }
 
+        /// <summary>
+        /// Задать новые входные значения на слой.
+        /// </summary>
+        /// <param name="inputs"></param>
+        public void UpdateNeuronsInputs(List<double> inputs) =>
+            _hiddenLayerData.ForEach(neuron => neuron.Inputs = inputs);
+
         #endregion
     }
 }

@@ -48,6 +48,12 @@
             var offset = MatrixConstants.MATRIX_SIZE - MatrixConstants.FILTER_MATRIX_SIZE;
             var step = MatrixConstants.MATRIX_SIZE - offset;
 
+            var emptyLastWeights = new List<double>();
+
+            for (var index = 0; index < MatrixConstants.MATRIX_SIZE *
+                MatrixConstants.MATRIX_SIZE; ++index)
+                emptyLastWeights.Add(0d);
+
             for (var xIndex = 0; xIndex < step; ++xIndex)
                 for (var yIndex = 0; yIndex < step; ++yIndex)
                 {
@@ -55,7 +61,10 @@
                     var weights = new List<double>();
 
                     GetDataByFilterCore(filterCore, xIndex, yIndex, inputs, weights);
-                    var neuron = new NeuronModel(inputs, weights);
+                    var neuron = new NeuronModel(inputs, weights)
+                    {
+                        LastWeights = emptyLastWeights
+                    };
 
                     _convolutionalLayerData.Add(neuron);
                 }
@@ -106,6 +115,37 @@
         public void UpdateDeltas(List<double> deltas) =>
             _convolutionalLayerData.ForEach(neuron =>
             neuron.Delta = deltas[_convolutionalLayerData.IndexOf(neuron)]);
+
+        /// <summary>
+        /// Обновить данные слоя.
+        /// </summary>
+        /// <param name="updatedFilterCore">Обновлённое ядро фильтра.</param>
+        /// <param name="updatedInputLayerData">Обновлённый входной слой.</param>
+        public void UpdateData(double[,] updatedFilterCore,
+            Dictionary<string, double> updatedInputLayerData)
+        {
+            var offset = MatrixConstants.MATRIX_SIZE - MatrixConstants.FILTER_MATRIX_SIZE;
+            var step = MatrixConstants.MATRIX_SIZE - offset;
+
+            var updatedConvolutionalLayerNeurons = new List<NeuronModel>();
+            var neuronIndex = 0;
+
+            for (var xIndex = 0; xIndex < step; ++xIndex)
+                for (var yIndex = 0; yIndex < step; ++yIndex)
+                {
+                    var inputs = new List<double>();
+                    var weights = new List<double>();
+
+                    GetDataByFilterCore(updatedFilterCore, xIndex, yIndex, inputs, weights);
+
+                    var neuron = new NeuronModel(inputs, weights)
+                    {
+                        LastWeights = _convolutionalLayerData[neuronIndex].LastWeights
+                    };
+
+                    ++neuronIndex;
+                }
+        }
 
         #endregion
     }
