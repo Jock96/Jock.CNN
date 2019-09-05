@@ -96,5 +96,17 @@
                     weights.Add(filterCore[xCoreIndex, yCoreIndex]);
                 }
         }
+
+        #region Обновление значений нейронов.
+
+        /// <summary>
+        /// Обновление дельт свёрточного слоя.
+        /// </summary>
+        /// <param name="deltas">Список дельт.</param>
+        public void UpdateDeltas(List<double> deltas) =>
+            _convolutionalLayerData.ForEach(neuron =>
+            neuron.Delta = deltas[_convolutionalLayerData.IndexOf(neuron)]);
+
+        #endregion
     }
 }

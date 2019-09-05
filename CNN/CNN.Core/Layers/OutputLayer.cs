@@ -43,13 +43,20 @@
             var inputs = new List<double>();
             var weights = new List<double>();
 
+            var emptyLastWeights = new List<double>();
+
             foreach (var neuron in _hiddenLayerData)
             {
                 inputs.Add(neuron.Output);
                 weights.Add(GetInitializedWeight());
+
+                emptyLastWeights.Add(0d);
             }
 
-            _outputNeuron = new NeuronModel(inputs, weights);
+            _outputNeuron = new NeuronModel(inputs, weights)
+            {
+                LastWeights = emptyLastWeights
+            };
         }
 
         /// <summary>

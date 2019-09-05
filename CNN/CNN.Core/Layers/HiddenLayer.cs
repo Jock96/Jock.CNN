@@ -5,6 +5,8 @@
     using System.Collections.Generic;
     using System;
     using CNN.BL.Enums;
+    using CNN.Core.Extensions;
+    using CNN.BL.Constants;
 
     /// <summary>
     /// Класс скрытого слоя.
@@ -63,13 +65,21 @@
             var inputs = new List<double>();
             var weights = new List<double>();
 
+            var emptyLastWeights = new List<double>();
+
             foreach (var neuron in _convolutionalLayerData)
             {
                 inputs.Add(neuron.Output);
                 weights.Add(GetInitializedWeight());
+
+                emptyLastWeights.Add(0d);
             }
 
-            var hiddenLayerNeuron = new NeuronModel(inputs, weights);
+            var hiddenLayerNeuron = new NeuronModel(inputs, weights)
+            {
+                LastWeights = emptyLastWeights
+            };
+
             return hiddenLayerNeuron;
         }
 
@@ -88,6 +98,29 @@
         public void UpdateDeltas(List<double> deltas) => 
             _hiddenLayerData.ForEach(neuron =>
             neuron.Delta = deltas[_hiddenLayerData.IndexOf(neuron)]);
+
+        /// <summary>
+        /// Обновление весов нейронов на слое.
+        /// </summary>
+        /// <param name="neuronIndexToWeightsDictionary">
+        /// Словарь обновлённых весов (индекс нейрона/новые веса).</param>
+        public void UpdateLayerNeuronsWeights(
+            Dictionary<int, List<double>> neuronIndexToWeightsDictionary)
+        {
+            foreach (var neuronKey in neuronIndexToWeightsDictionary.Keys)
+            {
+                if(!neuronIndexToWeightsDictionary.TryGetValue(neuronKey, out var updatedWeights))
+                {
+                    var exception = new Exception("не валидные данные в словаре обновлённых весов.");
+
+                    Console.WriteLine(ConsoleMessageConstants.ERROR_MESSAGE + exception.ToString());
+
+                    Console.ReadKey();
+                }
+
+                _hiddenLayerData[neuronKey].UpdateWeights(updatedWeights);
+            }
+        }
 
         #endregion
     }

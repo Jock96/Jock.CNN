@@ -73,6 +73,85 @@
             var convolutionalLayer = (ConvolutionalLayer)_layers.Find(layer => layer.LayerType.Equals(LayerType.Convolutional));
             var inputLayer = (InputLayer)_layers.Find(layer => layer.LayerType.Equals(LayerType.Input));
 
+            HiddenToOutputDeltasWork(outputLayer, hiddenLayer);
+            HiddentToOutputWeightsWork(outputLayer, hiddenLayer);
+
+            ConvolutionalToHiddenDeltasWork(hiddenLayer, convolutionalLayer);
+            ConvolutionalToHiddenWeightsWork(hiddenLayer, convolutionalLayer);
+
+            // Обновить веса между свёрточным и выходом (обновить ядро).
+
+            // Для свёртончного - 
+            // подсчитывается общая ошибка для каждого значения
+            // в ядре фильтра (в общем их 9 у меня), 
+            // К каждому из ядра прибавляется общая сумма
+            // соответствующей ячейки в своей позиции
+        }
+
+        /// <summary>
+        /// Получение градиента между нейронами свёрточного слоя и скрытого, и обновление весов.
+        /// </summary>
+        /// <param name="hiddenLayer">Скрытый слой.</param>
+        /// <param name="convolutionalLayer">Свёрточный слой.</param>
+        private void ConvolutionalToHiddenWeightsWork(HiddenLayer hiddenLayer, ConvolutionalLayer convolutionalLayer)
+        {
+            var convolutionalLayerNeurons = convolutionalLayer.GetLayerNeurons();
+            var convolutionalLayerOutputs = new List<double>();
+
+            var hiddenLayerNeurons = hiddenLayer.GetLayerNeurons();
+            var hiddenLayerDeltas = new List<double>();
+
+            convolutionalLayerNeurons.ForEach(neuron => convolutionalLayerOutputs.Add(neuron.Output));
+            hiddenLayerNeurons.ForEach(neuron => hiddenLayerDeltas.Add(neuron.Delta));
+
+            var convolutionalNeuronToGradientsDictionary = GetConvolutionalToHiddenGradients(
+                convolutionalLayerOutputs, hiddenLayerDeltas);
+
+            UpdateConvolutionalToHiddenWeights(convolutionalNeuronToGradientsDictionary, hiddenLayer);
+        }
+
+        /// <summary>
+        /// Получение и обновление дельты свёрточного слоя.
+        /// </summary>
+        /// <param name="hiddenLayer">Скрытый слой.</param>
+        /// <param name="convolutionalLayer">Свёрточный слой.</param>
+        private void ConvolutionalToHiddenDeltasWork(HiddenLayer hiddenLayer, ConvolutionalLayer convolutionalLayer)
+        {
+            var convolutionalLayerNeurons = convolutionalLayer.GetLayerNeurons();
+            var convolutionalLayerOutputs = new List<double>();
+
+            convolutionalLayerNeurons.ForEach(neuron =>
+            convolutionalLayerOutputs.Add(neuron.Output));
+
+            var convolutionalLayerDeltas = GetConvolutionalLayerDeltas(convolutionalLayerOutputs,
+                hiddenLayer.GetLayerNeurons());
+
+            convolutionalLayer.UpdateDeltas(convolutionalLayerDeltas);
+        }
+
+        /// <summary>
+        /// Получение градиента между нейронами скрытого слоя и выходного, и обновление весов.
+        /// </summary>
+        /// <param name="outputLayer">Выходной слой.</param>
+        /// <param name="hiddenLayer">Скрытый слой.</param>
+        private void HiddentToOutputWeightsWork(OutputLayer outputLayer, HiddenLayer hiddenLayer)
+        {
+            var hiddenLayerOutputs = new List<double>();
+            hiddenLayer.GetLayerNeurons().ForEach(neuron => hiddenLayerOutputs.Add(neuron.Output));
+
+            var hiddenLayerGradients = GetHiddenToOutputGradients(hiddenLayerOutputs,
+                outputLayer.GetOutputNeuron().Output);
+
+            UpdateHiddenToOutputWeights(hiddenLayerGradients, outputLayer);
+        }
+
+        /// <summary>
+        /// Вычисление дельт выходного и скрытого слоя.
+        /// </summary>
+        /// <param name="outputLayer">Выходной слой.</param>
+        /// <param name="hiddenLayer">Скрытый слой.</param>
+        private void HiddenToOutputDeltasWork(OutputLayer outputLayer, HiddenLayer hiddenLayer)
+        {
             // Получение и обновление дельты выходного слоя.
 
             var outputNeuron = outputLayer.GetOutputNeuron();
@@ -95,14 +174,141 @@
             }
 
             hiddenLayer.UpdateDeltas(deltasOfHiddenLayerNeurons);
+        }
 
-            // Получение градиента между нейронами скрытого слоя и выходного, и обновление весов.
+        /// <summary>
+        /// Получить словарь, где ключ - индекс нейрона свёрточного слоя,
+        /// значение - список градиентов данного нейрона к нейронам скрытого слоя.
+        /// </summary>
+        /// <param name="outputs">Выходы нейронов свёрточного слоя.</param>
+        /// <param name="deltas">Дельты скрытого слоя.</param>
+        /// <returns>Возвращает словарь (индекс/градиенты).</returns>
+        private Dictionary<int, List<double>> GetConvolutionalToHiddenGradients(
+            List<double> outputs, List<double> deltas)
+        {
+            var indexToGradientsDictionary = new Dictionary<int, List<double>>();
+            var indexOfNeuron = 0;
 
-            // Для свёртончного - 
-            // подсчитывается общая ошибка для каждого значения
-            // в ядре фильтра (в общем их 9 у меня), 
-            // К каждому из ядра прибавляется общая сумма
-            // соответствующей ячейки в своей позиции
+            foreach (var output in outputs)
+            {
+                var gradients = new List<double>();
+
+                foreach (var delta in deltas)
+                {
+                    var gradient = delta * output;
+                    gradients.Add(gradient);
+                }
+
+                indexToGradientsDictionary.Add(indexOfNeuron, gradients);
+                ++indexOfNeuron;
+            }
+
+            return indexToGradientsDictionary;
+        }
+
+        /// <summary>
+        /// Получить все дельты свёрточного слоя.
+        /// </summary>
+        /// <param name="outputs">Выходы нейронов свёрточного слоя.</param>
+        /// <param name="hiddenLayerNeurons">Нейроны скрытого слоя.</param>
+        /// <returns>Возвращает список дельт свёрточного слоя.</returns>
+        private List<double> GetConvolutionalLayerDeltas(
+            List<double> outputs, List<NeuronModel> hiddenLayerNeurons)
+        {
+            var convolutionalLayerDeltas = new List<double>();
+            var indexOfCurrentNeuronInConvolutionalLayer = 0;
+
+            foreach (var output in outputs)
+            {
+                var sum = 0d;
+
+                hiddenLayerNeurons.ForEach(neuron => 
+                sum += neuron.Weights[indexOfCurrentNeuronInConvolutionalLayer] * neuron.Delta);
+
+                var delta = DerivativeActivationFunction(output) * sum;
+                convolutionalLayerDeltas.Add(delta);
+
+                ++indexOfCurrentNeuronInConvolutionalLayer;
+            }
+
+            return convolutionalLayerDeltas;
+        }
+
+        /// <summary>
+        /// Обновить веса между скрытым и выходным слоем.
+        /// </summary>
+        /// <param name="gradients">Список градиентов между скрытым и выходным слоями.</param>
+        /// <param name="outputLayer">Выходной слой.</param>
+        private void UpdateHiddenToOutputWeights(List<double> gradients, OutputLayer outputLayer)
+        {
+            var updatedWeights = new List<double>();
+            var indexOfGradient = 0;
+
+            foreach (var gradient in gradients)
+            {
+                var lastWeight = outputLayer.GetOutputNeuron().
+                    LastWeights[indexOfGradient];
+
+                var updatedWeight = _configuration.Epsilon * gradient + 
+                    _configuration.Alpha * lastWeight;
+
+                updatedWeights.Add(updatedWeight);
+                ++indexOfGradient;
+            }
+
+            outputLayer.UpdateWeightsOfNeuronInLayer(updatedWeights);
+        }
+
+        /// <summary>
+        /// Обновить веса между свёрточным и скрытым слоями.
+        /// </summary>
+        /// <param name="gradients">Словарь градиентов (индекс нейрона свёрточного слоя/список градиентов).</param>
+        /// <param name="hiddenLayer">Скрытый слой.</param>
+        private void UpdateConvolutionalToHiddenWeights(
+            Dictionary<int, List<double>> gradients, HiddenLayer hiddenLayer)
+        {
+            var neuronIndexToUpdatedWeightsDictionary = new Dictionary<int, List<double>>();
+            var hiddenLayerNeurons = hiddenLayer.GetLayerNeurons();
+
+            var neuronIndex = 0;
+            foreach (var neuron in hiddenLayerNeurons)
+            {
+                var updatedWeights = new List<double>();
+
+                var weightIndex = 0;
+
+                foreach (var weights in neuron.Weights)
+                {
+                    var gradient = gradients[weightIndex][neuronIndex];
+
+                    var updatedWeight = _configuration.Epsilon * gradient +
+                        _configuration.Alpha * neuron.LastWeights[weightIndex];
+
+                    updatedWeights.Add(updatedWeight);
+
+                    ++weightIndex;
+                }
+
+                neuronIndexToUpdatedWeightsDictionary.Add(neuronIndex, updatedWeights);
+                ++neuronIndex;
+            }
+
+            hiddenLayer.UpdateLayerNeuronsWeights(neuronIndexToUpdatedWeightsDictionary);
+        }
+
+        /// <summary>
+        /// Получить список всех градиентов между скрытым и выходным слоем.
+        /// </summary>
+        /// <param name="outputs">Выходы нейронов скрытого слоя.</param>
+        /// <param name="outputDelta">Дельта выходного нейрона.</param>
+        /// <returns>Возвращает список градиентов для скрытого слоя.</returns>
+        private List<double> GetHiddenToOutputGradients(List<double> outputs, double outputDelta)
+        {
+            var gradientsList = new List<double>();
+
+            outputs.ForEach(output => gradientsList.Add(output * outputDelta));
+
+            return gradientsList;
         }
 
         /// <summary>
@@ -120,8 +326,10 @@
         /// <param name="indexInLayer">Индекс в скрытом слое.</param>
         /// <param name="outputNeuron">Нейрон выходного слоя.</param>
         /// <returns></returns>
-        private double GetHiddenLayerNeuronDelta(double neuronOutput, int indexInLayer, NeuronModel outputNeuron) => 
-            DerivativeActivationFunction(neuronOutput) * outputNeuron.Inputs[indexInLayer] * outputNeuron.Delta;
+        private double GetHiddenLayerNeuronDelta(
+            double neuronOutput, int indexInLayer, NeuronModel outputNeuron) => 
+            DerivativeActivationFunction(neuronOutput) *
+            outputNeuron.Inputs[indexInLayer] * outputNeuron.Delta;
 
         /// <summary>
         /// Производная от функции активации (сигмоид).

@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration.cs" />
+    <Compile Include="Extensions\NeuronModelExtension.cs" />
     <Compile Include="Layers\ConvolutionalLayer.cs" />
     <Compile Include="Layers\HiddenLayer.cs" />
     <Compile Include="Layers\Layer.cs" />
