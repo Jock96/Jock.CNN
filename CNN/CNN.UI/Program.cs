@@ -3,15 +3,16 @@
     using System;
     using System.IO;
     using System.Collections.Generic;
+    using System.Linq;
+
+    using BL.Helpers;
 
     using CNN.BL.Constants;
     using CNN.BL.Utils;
-
     using CNN.Core.Models;
     using CNN.Core.Layers;
     using CNN.Core;
     using CNN.Core.Utils;
-    using System.Linq;
 
     /// <summary>
     /// Класс входной точки приложения.
@@ -67,8 +68,47 @@
             Console.BackgroundColor = ConsoleColor.Black;
             Console.ForegroundColor = ConsoleColor.Green;
 
+            Console.WriteLine(ConsoleMessageConstants.LOAD_PATH_MESSAGE);
+
+            var path = GetPathToWeightFiles();
+            var weightLodUtil = new WeightLoadUtil(path);
+
+            weightLodUtil.Load();
+            var data = weightLodUtil.GetData();
+
             //////////////////
             Console.ReadKey();
+        }
+
+        /// <summary>
+        /// Получить путь до файлов весов.
+        /// </summary>
+        /// <returns>Возвращает строку пути.</returns>
+        private static string GetPathToWeightFiles()
+        {
+            var path = Console.ReadLine();
+
+            if (string.IsNullOrEmpty(path))
+                path = PathHelper.GetResourcesPath();
+
+            if (!Directory.Exists(path))
+            {
+                Console.BackgroundColor = ConsoleColor.Red;
+                Console.ForegroundColor = ConsoleColor.Black;
+
+                Console.WriteLine($"{ConsoleMessageConstants.ERROR_MESSAGE} " +
+                    $"указанная директория не существует!");
+
+                Console.BackgroundColor = ConsoleColor.Black;
+                Console.ForegroundColor = ConsoleColor.Green;
+
+                Console.WriteLine(ConsoleMessageConstants.PRESS_ANY_KEY_MESSAGE);
+                Console.ReadKey();
+
+                Environment.Exit(0);
+            }
+
+            return path;
         }
 
         /// <summary>
@@ -85,7 +125,7 @@
             Console.ForegroundColor = ConsoleColor.Green;
 
             var pathToFiles = GetPathToFiles();
-            var pathToResources = BL.Helpers.PathHelper.GetResourcesPath();
+            var pathToResources = PathHelper.GetResourcesPath();
 
             if (string.IsNullOrEmpty(pathToFiles))
                 pathToFiles = pathToResources;
