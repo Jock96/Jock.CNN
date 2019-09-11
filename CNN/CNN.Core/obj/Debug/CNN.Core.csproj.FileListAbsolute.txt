@@ -4,6 +4,5 @@ C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.Core\obj\Debug\CNN.Co
 C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.Core\obj\Debug\CNN.Core.csproj.CoreCompileInputs.cache
 C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.Core\obj\Debug\CNN.Core.dll
 C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.Core\obj\Debug\CNN.Core.pdb
-C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.Core\bin\Debug\Resources\1.bmp
 C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.Core\bin\Debug\CNN.BL.dll
 C:\Лабы\Учёба (3 семестр)\Jock.CNN\CNN\CNN.Core\bin\Debug\CNN.BL.pdb

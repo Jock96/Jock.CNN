@@ -30,14 +30,21 @@
         private double _errorSummary;
 
         /// <summary>
+        /// Сеты с данными.
+        /// </summary>
+        private List<double[,]> _dataSets;
+
+        /// <summary>
         /// Инструмент обучения нейронной сети.
         /// </summary>
         /// <param name="layers">Список слоёв нейронной сети.</param>
         /// <param name="configuration">Конфигурация нейронной сети.</param>
-        public LearningUtil(List<Layer> layers, Configuration configuration)
+        /// <param name="dataSets">Сеты с данными.</param>
+        public LearningUtil(List<Layer> layers, Configuration configuration, List<double[,]> dataSets)
         {
             _layers = layers;
             _configuration = configuration;
+            _dataSets = dataSets;
         }
 
         /// <summary>
@@ -47,34 +54,91 @@
         {
             var errorValue = 0d;
 
+            var outputLayer = (OutputLayer)_layers.Find(layer =>
+                    layer.LayerType.Equals(LayerType.Output));
+
+            var hiddenLayer = (HiddenLayer)_layers.Find(layer =>
+            layer.LayerType.Equals(LayerType.Hidden));
+
+            var convolutionalLayer = (ConvolutionalLayer)_layers.Find(layer =>
+            layer.LayerType.Equals(LayerType.Convolutional));
+
+            var inputLayer = (InputLayer)_layers.Find(layer =>
+            layer.LayerType.Equals(LayerType.Input));
+
             for (var epochIndex = 0; epochIndex < _configuration.EpochCount; ++epochIndex)
             {
                 for (var iteration = 0; iteration < _configuration.IterationsInEpochCount; ++iteration)
                 {
-                    var outputLayer = (OutputLayer)_layers.Find(layer =>
-                    layer.LayerType.Equals(LayerType.Output));
-
-                    var hiddenLayer = (HiddenLayer)_layers.Find(layer =>
-                    layer.LayerType.Equals(LayerType.Hidden));
-
-                    var convolutionalLayer = (ConvolutionalLayer)_layers.Find(layer =>
-                    layer.LayerType.Equals(LayerType.Convolutional));
-
-                    var inputLayer = (InputLayer)_layers.Find(layer =>
-                    layer.LayerType.Equals(LayerType.Input));
-
                     var outputValue = outputLayer.GetOutputNeuron().Output;
-                    errorValue = ErrorByRootMSE(epochIndex, outputValue);
 
                     Backpropagation(inputLayer, convolutionalLayer, hiddenLayer, outputLayer);
-                    GetOutputCallback(outputValue, errorValue, epochIndex, iteration);
+                    GetOutputCallback(outputValue, epochIndex, iteration);
 
-                    LayersUpdate(outputLayer, hiddenLayer, convolutionalLayer, inputLayer);
+                    LayersUpdate(outputLayer, hiddenLayer, convolutionalLayer, inputLayer, iteration);
                 }
+
+                ErrorCallBack(errorValue, outputLayer, epochIndex);
             }
 
-            Console.WriteLine($"{ConsoleMessageConstants.PRESS_ANY_KEY_MESSAGE}");
+            EndLearning();
+        }
+
+        /// <summary>
+        /// Действия по окончанию обучения.
+        /// </summary>
+        private void EndLearning()
+        {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+
+            var breakFlag = false;
+            var consoleValue = string.Empty;
+
+            do
+            {
+                Console.WriteLine(ConsoleMessageConstants.SAVE_MESSAGE);
+                consoleValue = Console.ReadLine();
+
+                if (DialogConstants.NoResults.Contains(consoleValue) ||
+                    DialogConstants.YesResults.Contains(consoleValue))
+                    breakFlag = true;
+
+            } while (!breakFlag);
+
+            if (DialogConstants.NoResults.Contains(consoleValue))
+            {
+                Console.WriteLine(ConsoleMessageConstants.PRESS_ANY_KEY_MESSAGE);
+                Console.ReadKey();
+            }
+            else
+            {
+                Console.WriteLine(ConsoleMessageConstants.SAVE_PATH_MESSAGE);
+
+                var path = Console.ReadLine();
+
+                WeightSaveUtil.SaveAs(path, _layers);
+            }
+
+            Console.ForegroundColor = ConsoleColor.Green;
+
+            Console.WriteLine(ConsoleMessageConstants.PRESS_ANY_KEY_MESSAGE);
             Console.ReadKey();
+        }
+
+        /// <summary>
+        /// Вывод информации по ошибки.
+        /// </summary>
+        /// <param name="errorValue">Значение ошибки.</param>
+        /// <param name="outputLayer">Выходной слой.</param>
+        /// <param name="epochIndex">Индекс эпохи.</param>
+        private void ErrorCallBack(double errorValue, OutputLayer outputLayer, int epochIndex)
+        {
+            var outputValueToError = outputLayer.GetOutputNeuron().Output;
+            errorValue = ErrorByRootMSE(outputValueToError);
+
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"Значение ошибки текущей эпохи({epochIndex + 1}): {errorValue}\n");
+            Console.ForegroundColor = ConsoleColor.Green;
         }
 
         /// <summary>
@@ -84,13 +148,11 @@
         /// <param name="hiddenLayer">Скрытый слой.</param>
         /// <param name="convolutionalLayer">Свёрточный слой.</param>
         /// <param name="inputLayer">Входной слой.</param>
-        private void LayersUpdate(OutputLayer outputLayer, HiddenLayer hiddenLayer, ConvolutionalLayer convolutionalLayer, InputLayer inputLayer)
+        /// <param name="currentIteration">Текущая итерация.</param>
+        private void LayersUpdate(OutputLayer outputLayer, HiddenLayer hiddenLayer,
+            ConvolutionalLayer convolutionalLayer, InputLayer inputLayer, int currentIteration)
         {
-            if (_configuration.IterationsInEpochCount > 1)
-            {
-                // Задать новые значения входного слоя.
-            }
-
+            inputLayer.UpdateInputData(_dataSets[currentIteration]);
             convolutionalLayer.UpdateData(FilterCoreModel.GetCore, inputLayer.GetLayerNeurons());
 
             var inputsToHiddenLayer = new List<double>();
@@ -534,26 +596,24 @@
         #region Информационные команды.
 
         /// <summary>
-        /// Просчёт ошибки.
+        /// Расчёт ошибки.
         /// </summary>
-        /// <param name="currentEpoch">Текущая эпоха.</param>
         /// <param name="currentOutput">Текущий вывод на конечном слое.</param>
         /// <returns>Возвращает значение ошибки.</returns>
-        private double ErrorByRootMSE(int currentEpoch, double currentOutput)
+        private double ErrorByRootMSE(double currentOutput)
         {
             _errorSummary += Math.Pow(_configuration.IdealResult - currentOutput, 2);
 
-            return Math.Pow(_errorSummary / currentEpoch, 0.5);
+            return Math.Pow(_errorSummary / _configuration.EpochCount, 0.5);
         }
 
         /// <summary>
         /// Дать обратную связь по информации текущей итерациии эпохи.
         /// </summary>
         /// <param name="outputValue">Значение выходного слоя.</param>
-        /// <param name="errorValue">Значение ошибки.</param>
         /// <param name="currentEpoch">Текущая эпоха.</param>
         /// <param name="currentItaration">Текущая итерация.</param>
-        private void GetOutputCallback(double outputValue, double errorValue,
+        private void GetOutputCallback(double outputValue, 
             int currentEpoch, int currentItaration)
         {
             var currentEpochMessage = $"Текущая эпоха - {currentEpoch + 1} ";
@@ -563,12 +623,9 @@
 
             var outputValueMessage = $"Значение выходного слоя {outputValue}.";
 
-            var errorValueMessage = $"Значение ошибки {errorValue}.";
-
             Console.WriteLine($"{ConsoleMessageConstants.INFO_MESSAGE}\n" +
                 $"{currentEpochMessage}{currentIterationMessage}\n" +
-                $"{outputValueMessage}\n" +
-                $"{errorValueMessage}");
+                $"{outputValueMessage}\n");
         }
 
 #endregion

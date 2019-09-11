@@ -29,5 +29,10 @@
         /// Разделитель значений в ключе.
         /// </summary>
         public const string KEY_SEPARATOR = "|";
+
+        /// <summary>
+        /// Имя матрицы.
+        /// </summary>
+        public const string MATRIX_NAME = "Core";
     }
 }

@@ -6,6 +6,7 @@
     using System;
 
     using BL.Constants;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Класс конвертера изображений в матрицу.
@@ -15,48 +16,55 @@
         /// <summary>
         /// Полученное изображение.
         /// </summary>
-        private Bitmap _image;
+        private List<Bitmap> _images;
 
         /// <summary>
         /// Инструмент конвертации изображений в матрицу.
         /// </summary>
-        /// <param name="imagePath">Путь до изображения.</param>
-        public ImageConverterUtil(string imagePath)
+        /// <param name="imagePathes">Пути до изображения.</param>
+        public ImageConverterUtil(List<string> imagePathes)
         {
-            Bitmap image;
+            _images = new List<Bitmap>();
+            var pathToImagesDictionary = new Dictionary<string, Bitmap>();
 
-            try
+            foreach(var imagePath in imagePathes)
             {
-                image = new Bitmap(imagePath);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ConsoleMessageConstants.ERROR_MESSAGE + ex.ToString());
-                Console.WriteLine(ConsoleMessageConstants.PRESS_ANY_KEY_MESSAGE);
+                try
+                {
+                    pathToImagesDictionary.Add(imagePath, new Bitmap(imagePath));
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ConsoleMessageConstants.ERROR_MESSAGE + ex.ToString());
+                    Console.WriteLine(ConsoleMessageConstants.PRESS_ANY_KEY_MESSAGE);
 
-                Console.ReadKey();
+                    Console.ReadKey();
 
-                Console.WriteLine(ConsoleMessageConstants.EXIT_MESSAGE);
+                    Console.WriteLine(ConsoleMessageConstants.EXIT_MESSAGE);
 
-                Thread.Sleep(500);
-                Environment.Exit(0);
+                    Thread.Sleep(500);
+                    Environment.Exit(0);
 
-                return;
-            }
-
-            if (image.Size.Height != MatrixConstants.MATRIX_SIZE ||
-                image.Size.Width != MatrixConstants.MATRIX_SIZE)
-            {
-                var convertedImage = ResizeImage(imagePath, image);
-
-                if (convertedImage == null)
                     return;
-
-                _image = convertedImage;
+                }
             }
-            else
+
+            foreach (var keyValuePair in pathToImagesDictionary)
             {
-                _image = image;
+                if (keyValuePair.Value.Size.Height != MatrixConstants.MATRIX_SIZE ||
+                keyValuePair.Value.Size.Width != MatrixConstants.MATRIX_SIZE)
+                {
+                    var convertedImage = ResizeImage(keyValuePair.Key, keyValuePair.Value);
+
+                    if (convertedImage == null)
+                        return;
+
+                    _images.Add(convertedImage);
+                }
+                else
+                {
+                    _images.Add(keyValuePair.Value);
+                }
             }
         }
 
@@ -64,17 +72,24 @@
         /// Конвертировать изображение в матрицу значений.
         /// </summary>
         /// <returns>Возвращает матрицу значений.</returns>
-        public double [,] ConvertImageToMatrix()
+        public List<double[,]> ConvertImagesToMatrix()
         {
-            var size = _image.Size;
-            var matrix = new double[size.Width, size.Height];
-            
-            // TODO: берём любой канал и на 255 делим.
-            for (var xIndex = 0; xIndex < size.Width; ++xIndex)
-                for (var yIndex = 0; yIndex < size.Height; ++yIndex)
-                    matrix[xIndex, yIndex] = (_image.GetPixel(xIndex, yIndex).R / 255);
+            var listOfMatrix = new List<double[,]>();
 
-            return matrix;
+            foreach (var image in _images)
+            {
+                var size = image.Size;
+                var matrix = new double[size.Width, size.Height];
+
+                // TODO: берём любой канал и на 255 делим.
+                for (var xIndex = 0; xIndex < size.Width; ++xIndex)
+                    for (var yIndex = 0; yIndex < size.Height; ++yIndex)
+                        matrix[xIndex, yIndex] = (image.GetPixel(xIndex, yIndex).R / 255);
+
+                listOfMatrix.Add(matrix);
+            }
+
+            return listOfMatrix;
         }
 
         /// <summary>
@@ -88,15 +103,21 @@
         {
             var defaultSize = new Size(MatrixConstants.MATRIX_SIZE, MatrixConstants.MATRIX_SIZE);
 
+            var imageName = Path.GetFileNameWithoutExtension(imagePath);
+
+            var imageNameWithExtension = Path.GetFileName(imagePath);
+            var pathWithoutFile = imagePath.Replace(imageNameWithExtension, string.Empty);
+
+            var directoryToSave = Path.Combine(pathWithoutFile, FileConstants.RESIZED_IMAGE_NAME_POSTFIX);
+
+            if (!Directory.Exists(directoryToSave))
+                Directory.CreateDirectory(directoryToSave);
+
             try
             {
                 var bitmap = new Bitmap(image, defaultSize);
-                var imageName = Path.GetFileNameWithoutExtension(imagePath);
 
-                var imageNameWithExtension = Path.GetFileName(imagePath);
-                var newPath = imagePath.Replace(imageNameWithExtension, string.Empty);
-
-                var pathToSave = $"{newPath}{imageName}" +
+                var pathToSave = $"{directoryToSave}\\{imageName}" +
                     $"{FileConstants.RESIZED_IMAGE_NAME_POSTFIX}{FileConstants.IMAGE_EXTENSION}";
 
                 bitmap.Save(pathToSave);

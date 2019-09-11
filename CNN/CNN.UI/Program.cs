@@ -11,6 +11,7 @@
     using CNN.Core.Layers;
     using CNN.Core;
     using CNN.Core.Utils;
+    using System.Linq;
 
     /// <summary>
     /// Класс входной точки приложения.
@@ -22,22 +23,20 @@
         /// </summary>
         static void Main(string[] args)
         {
-            Console.ForegroundColor = ConsoleColor.Green;
-
-            Console.WriteLine(ConsoleMessageConstants.HELLO_MESSAGE);
-            Console.WriteLine(ConsoleMessageConstants.PRESS_ANY_KEY_MESSAGE);
-
-            Console.ReadKey();
-
-            Console.Write(ConsoleMessageConstants.FILE_NAME_MESSAGE);
-
-            var fileName = Console.ReadLine();
+            var pathToFiles = GetPathToFiles();
             var pathToResources = BL.Helpers.PathHelper.GetResourcesPath();
 
-            var path = Path.Combine(pathToResources, fileName + FileConstants.IMAGE_EXTENSION);
+            if (string.IsNullOrEmpty(pathToFiles))
+                pathToFiles = pathToResources;
 
-            var converter = new ImageConverterUtil(path);
-            var matrixOfPicture = converter.ConvertImageToMatrix();
+            //var path = Path.Combine(pathToResources, fileName + FileConstants.IMAGE_EXTENSION);
+
+            var images = Directory.GetFiles(pathToFiles).ToList();
+
+            var converter = new ImageConverterUtil(images);
+            var listOfPicturesMatrix = converter.ConvertImagesToMatrix();
+
+            var iterationsCount = listOfPicturesMatrix.Count;
 
             var configuration = new Configuration
             {
@@ -45,19 +44,19 @@
                 Epsilon = 3.1,
                 EpochCount = 3,
                 IdealResult = 1,
-                IterationsInEpochCount = 6
+                IterationsInEpochCount = iterationsCount
             };
 
             var layers = new List<Layer>();
             var filterCore = FilterCoreModel.Initialize();
 
-            LayersInitialize(matrixOfPicture, layers, filterCore,
+            LayersInitialize(listOfPicturesMatrix, layers, filterCore,
                 out Dictionary<string, double> inputLayerWeights,
                 out List<NeuronModel> convolutionalLayerNeurons,
                 out List<NeuronModel> hiddenLayerNeurons,
                 out NeuronModel outputNeuron);
 
-            var learningUtil = new LearningUtil(layers, configuration);
+            var learningUtil = new LearningUtil(layers, configuration, listOfPicturesMatrix);
             learningUtil.StartToLearn();
 
             return;
@@ -70,18 +69,46 @@
         }
 
         /// <summary>
+        /// Получение пути до файлов с изображениями.
+        /// </summary>
+        /// <returns>Возвращает путь до файлов с изображениями.</returns>
+        private static string GetPathToFiles()
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+
+            Console.WriteLine(ConsoleMessageConstants.HELLO_MESSAGE);
+            Console.WriteLine(ConsoleMessageConstants.PRESS_ANY_KEY_MESSAGE);
+
+            Console.ReadKey();
+
+            Console.ForegroundColor = ConsoleColor.Cyan;
+
+            Console.Write($"\n{ConsoleMessageConstants.PATH_MESSAGE}");
+
+            var fileName = Console.ReadLine();
+            Console.WriteLine();
+
+            Console.ForegroundColor = ConsoleColor.Green;
+            return fileName;
+        }
+
+        /// <summary>
         /// Инициализация слоёв нейронной сети.
         /// </summary>
-        /// <param name="matrixOfPicture">Матрица изображений.</param>
+        /// <param name="listOfPicturesmatrix">Список матриц изображений.</param>
         /// <param name="layers">Список слоёв.</param>
         /// <param name="filterCore">Ядро фильтра.</param>
         /// <param name="inputLayerNeurons">Нейроны выходного слоя.</param>
         /// <param name="convolutionalLayerNeurons">Нейроны свёрточного слоя.</param>
         /// <param name="hiddenLayerNeurons">Нейроны скрытого слоя.</param>
         /// <param name="outputNeuron">Нейроны выходного слоя.</param>
-        private static void LayersInitialize(double[,] matrixOfPicture, List<Layer> layers, double[,] filterCore, out Dictionary<string, double> inputLayerNeurons, out List<NeuronModel> convolutionalLayerNeurons, out List<NeuronModel> hiddenLayerNeurons, out NeuronModel outputNeuron)
+        private static void LayersInitialize(List<double[,]> listOfPicturesmatrix, List<Layer> layers, 
+            double[,] filterCore, out Dictionary<string, double> inputLayerNeurons,
+            out List<NeuronModel> convolutionalLayerNeurons, out List<NeuronModel> hiddenLayerNeurons,
+            out NeuronModel outputNeuron)
         {
-            var inputLayer = new InputLayer(matrixOfPicture);
+            var firstDataSet = listOfPicturesmatrix.First();
+            var inputLayer = new InputLayer(firstDataSet);
 
             inputLayer.Initialize();
             layers.Add(inputLayer);
