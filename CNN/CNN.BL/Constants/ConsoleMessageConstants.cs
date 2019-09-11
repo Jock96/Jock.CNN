@@ -9,12 +9,28 @@
         /// Приветственное сообщение.
         /// </summary>
         public const string HELLO_MESSAGE = "Вас приветствует демонстрационное " +
-            "приложение свёрточной нейронной сети!";
+            "приложение свёрточной нейронной сети.";
+
+        /// <summary>
+        /// Сообщение о выборе обучения.
+        /// </summary>
+        public const string LEARN_RESULT_MESSAGE = "Вы выбрали обучение.";
+
+        /// <summary>
+        /// Сообщение о выборе распознавания.
+        /// </summary>
+        public const string RECOGNIZE_RESULT_MESSAGE = "Вы выбрали распознавание.";
 
         /// <summary>
         /// Сообщение сохранения весов.
         /// </summary>
         public const string SAVE_MESSAGE = "Вы хотите сохранить текущие веса?(Y/N)";
+
+        /// <summary>
+        /// Сообщения выбора действия.
+        /// </summary>
+        public const string WORK_CHOISE_MESSAGE = "Для распознавания нажмите клавишу (R), " +
+            "для обучениея клавишу (L).";
 
         /// <summary>
         /// Сообзение пути сохранения файлов.

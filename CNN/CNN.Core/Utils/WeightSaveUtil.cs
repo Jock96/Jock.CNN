@@ -6,10 +6,9 @@
 
     using CNN.Core.Layers;
     using CNN.Core.Models;
-    using System;
+
     using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
 
     /// <summary>
     /// Инструмент сохранения весов.

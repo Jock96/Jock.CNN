@@ -23,13 +23,72 @@
         /// </summary>
         static void Main(string[] args)
         {
+            Console.BackgroundColor = ConsoleColor.Green;
+            Console.ForegroundColor = ConsoleColor.Black;
+
+            Console.WriteLine(ConsoleMessageConstants.HELLO_MESSAGE + "\n");
+
+            Console.BackgroundColor = ConsoleColor.Black;
+            Console.ForegroundColor = ConsoleColor.Green;
+
+            var consoleValue = string.Empty;
+            var breakFlag = false;
+
+            do
+            {
+                Console.WriteLine(ConsoleMessageConstants.WORK_CHOISE_MESSAGE);
+
+                consoleValue = Console.ReadLine();
+
+                if (DialogConstants.LearnResults.Contains(consoleValue) ||
+                    DialogConstants.RecognizeResults.Contains(consoleValue))
+                    breakFlag = true;
+
+            } while(!breakFlag);
+
+            Console.Clear();
+
+            if (DialogConstants.LearnResults.Contains(consoleValue))
+                DoLearnWork();
+            else
+                DoRecognizeWork();
+        }
+
+        /// <summary>
+        /// Выполнить распознавание.
+        /// </summary>
+        private static void DoRecognizeWork()
+        {
+            Console.BackgroundColor = ConsoleColor.Green;
+            Console.ForegroundColor = ConsoleColor.Black;
+
+            Console.WriteLine(ConsoleMessageConstants.RECOGNIZE_RESULT_MESSAGE);
+
+            Console.BackgroundColor = ConsoleColor.Black;
+            Console.ForegroundColor = ConsoleColor.Green;
+
+            //////////////////
+            Console.ReadKey();
+        }
+
+        /// <summary>
+        /// Выполнить обучение.
+        /// </summary>
+        private static void DoLearnWork()
+        {
+            Console.BackgroundColor = ConsoleColor.Green;
+            Console.ForegroundColor = ConsoleColor.Black;
+
+            Console.WriteLine(ConsoleMessageConstants.LEARN_RESULT_MESSAGE);
+
+            Console.BackgroundColor = ConsoleColor.Black;
+            Console.ForegroundColor = ConsoleColor.Green;
+
             var pathToFiles = GetPathToFiles();
             var pathToResources = BL.Helpers.PathHelper.GetResourcesPath();
 
             if (string.IsNullOrEmpty(pathToFiles))
                 pathToFiles = pathToResources;
-
-            //var path = Path.Combine(pathToResources, fileName + FileConstants.IMAGE_EXTENSION);
 
             var images = Directory.GetFiles(pathToFiles).ToList();
 
@@ -58,14 +117,6 @@
 
             var learningUtil = new LearningUtil(layers, configuration, listOfPicturesMatrix);
             learningUtil.StartToLearn();
-
-            return;
-
-            // TODO: Отладка, убрать.
-            GetDebugInfo(filterCore, inputLayerWeights,
-                convolutionalLayerNeurons, hiddenLayerNeurons, outputNeuron);
-
-            Console.ReadKey();
         }
 
         /// <summary>
@@ -74,13 +125,6 @@
         /// <returns>Возвращает путь до файлов с изображениями.</returns>
         private static string GetPathToFiles()
         {
-            Console.ForegroundColor = ConsoleColor.Green;
-
-            Console.WriteLine(ConsoleMessageConstants.HELLO_MESSAGE);
-            Console.WriteLine(ConsoleMessageConstants.PRESS_ANY_KEY_MESSAGE);
-
-            Console.ReadKey();
-
             Console.ForegroundColor = ConsoleColor.Cyan;
 
             Console.Write($"\n{ConsoleMessageConstants.PATH_MESSAGE}");
@@ -132,45 +176,6 @@
             layers.Add(outputLayer);
 
             outputNeuron = outputLayer.GetOutputNeuron();
-        }
-
-        /// <summary>
-        /// Выводит отладочную информацию.
-        /// </summary>
-        /// <param name="filterCore">Ядро фильра.</param>
-        /// <param name="inputLayerWeights">Вывод входного слоя.</param>
-        /// <param name="convolutionalLayerNeurons">Нейроны свёрточного слоя.</param>
-        /// <param name="hiddenLayerNeurons">Нейроны скрытого слоя.</param>
-        /// <param name="outputNeuron">Выходной нейрон.</param>
-        private static void GetDebugInfo(double[,] filterCore, 
-            Dictionary<string, double> inputLayerWeights, 
-            List<NeuronModel> convolutionalLayerNeurons,
-            List<NeuronModel> hiddenLayerNeurons, NeuronModel outputNeuron)
-        {
-            Console.WriteLine("Ядро фильтра:");
-
-            foreach (var value in filterCore)
-                Console.Write(value.ToString() + " ");
-
-            Console.WriteLine("\nЗначения входного слоя:");
-
-            foreach (var value in inputLayerWeights)
-                Console.WriteLine(value.Key.ToString() + ": " + value.Value.ToString());
-
-            Console.WriteLine("\nЗначения свёрточного слоя:");
-
-            foreach (var value in convolutionalLayerNeurons)
-                Console.WriteLine(convolutionalLayerNeurons.IndexOf(value).ToString() +
-                    ": " + value.Output.ToString());
-
-            Console.WriteLine("\nЗначения скрытого слоя:");
-
-            foreach (var value in hiddenLayerNeurons)
-                Console.WriteLine(hiddenLayerNeurons.IndexOf(value).ToString() +
-                    ": " + value.Output.ToString());
-
-            Console.WriteLine("\nЗначение выходного нейрона:");
-            Console.WriteLine(outputNeuron.Output);
         }
     }
 }

@@ -107,8 +107,11 @@
 
             if (DialogConstants.NoResults.Contains(consoleValue))
             {
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine(ConsoleMessageConstants.PRESS_ANY_KEY_MESSAGE);
+
                 Console.ReadKey();
+                Environment.Exit(0);
             }
             else
             {
