@@ -72,6 +72,9 @@
                     LayersUpdate(outputLayer, hiddenLayer, convolutionalLayer, inputLayer);
                 }
             }
+
+            Console.WriteLine($"{ConsoleMessageConstants.PRESS_ANY_KEY_MESSAGE}");
+            Console.ReadKey();
         }
 
         /// <summary>
@@ -211,9 +214,9 @@
                 MatrixConstants.FILTER_MATRIX_SIZE];
 
             var countOfNeurons = Math.Pow(MatrixConstants.FILTER_MATRIX_SIZE, 2);
-            var summaryOfHiddenLayerDeltas = 0d;
+            var summaryOfConvolutionalLayerDeltas = 0d;
 
-            convolutionalLayerDeltas.ForEach(delta => summaryOfHiddenLayerDeltas += delta);
+            convolutionalLayerDeltas.ForEach(delta => summaryOfConvolutionalLayerDeltas += delta);
 
             for (var xIndex = 0; xIndex < MatrixConstants.FILTER_MATRIX_SIZE; ++xIndex)
                 for (var yIndex = 0; yIndex < MatrixConstants.FILTER_MATRIX_SIZE; ++yIndex)
@@ -224,7 +227,7 @@
                     foreach (var output in valuesFromInputData)
                     {
                         var middleDelta = DerivativeActivationFunction(output) * 
-                            summaryOfHiddenLayerDeltas * 
+                            summaryOfConvolutionalLayerDeltas * 
                             FilterCoreModel.GetCore[xIndex, yIndex];
 
                         middleDeltasMatrix[xIndex, yIndex] = middleDelta;
@@ -511,8 +514,20 @@
         /// </summary>
         /// <param name="neuronOutput">Вывод нейрона.</param>
         /// <returns>Вовзращает результат производной функции активации (сигмоид) нейрона.</returns>
-        private double DerivativeActivationFunction(double neuronOutput) => 
+        private double DerivativeActivationFunction(double neuronOutput) =>
             ((1 - neuronOutput) * neuronOutput);
+
+#if !DEBUG && !RELEASE
+
+        /// <summary>
+        /// Производная от функции активации (Гиперболический тангенс).
+        /// </summary>
+        /// <param name="neuronOutput">Вывод нейрона.</param>
+        /// <returns>Вовзращает результат производной функции активации (сигмоид) нейрона.</returns>
+        private double DerivativeActivationFunction(double neuronOutput) =>
+            (1 - Math.Pow(neuronOutput, 2));
+
+#endif
 
         #endregion
 
@@ -554,11 +569,8 @@
                 $"{currentEpochMessage}{currentIterationMessage}\n" +
                 $"{outputValueMessage}\n" +
                 $"{errorValueMessage}");
-
-            Console.WriteLine($"{ConsoleMessageConstants.PRESS_ANY_KEY_MESSAGE}");
-            Console.ReadKey();
         }
 
-        #endregion
+#endregion
     }
 }

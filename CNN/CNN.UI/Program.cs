@@ -41,11 +41,11 @@
 
             var configuration = new Configuration
             {
-                Alpha = 0.1,
-                Epsilon = 0.1,
-                EpochCount = 2,
+                Alpha = 3.1,
+                Epsilon = 3.1,
+                EpochCount = 3,
                 IdealResult = 1,
-                IterationsInEpochCount = 1
+                IterationsInEpochCount = 6
             };
 
             var layers = new List<Layer>();

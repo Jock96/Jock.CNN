@@ -86,12 +86,12 @@
         /// <param name="weights">Список весов для заполнения.</param>
         private void GetDataByFilterCore(double[,] filterCore, int xIndex, int yIndex, List<double> inputs, List<double> weights)
         {
-            for (var xCoreIndex = 0; xCoreIndex < MatrixConstants.FILTER_MATRIX_SIZE; ++xCoreIndex)
-                for (var yCoreIndex = 0; yCoreIndex < MatrixConstants.FILTER_MATRIX_SIZE; ++yCoreIndex)
+            for (var xCoreIndex = 0; xCoreIndex < MatrixConstants.FILTER_MATRIX_SIZE; xCoreIndex++)
+                for (var yCoreIndex = 0; yCoreIndex < MatrixConstants.FILTER_MATRIX_SIZE; yCoreIndex++)
                 {
-                    var comparsionString = $"{MatrixConstants.POSITION_IN_X_AXIS}{xIndex}" +
+                    var comparsionString = $"{MatrixConstants.POSITION_IN_X_AXIS}{xIndex + xCoreIndex}" +
                         $"{MatrixConstants.KEY_SEPARATOR}" +
-                        $"{MatrixConstants.POSITION_IN_Y_AXIS}{yIndex}";
+                        $"{MatrixConstants.POSITION_IN_Y_AXIS}{yIndex + yCoreIndex}";
 
                     // TODO: Исправить ошибку в заполнении слоя.
 

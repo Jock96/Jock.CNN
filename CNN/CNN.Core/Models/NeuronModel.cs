@@ -83,6 +83,9 @@
             for (int index = 0; index < inputs.Count; ++index)
                 summary += inputs[index] * weights[index];
 
+            //Гиперболический тангенс
+            //(Math.Exp(2 * summary) - 1) / (Math.Exp(2 * summary) + 1);
+
             return Math.Pow(1 + Math.Exp(-summary), -1);
         }
     }
