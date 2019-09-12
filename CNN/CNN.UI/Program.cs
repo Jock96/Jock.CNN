@@ -74,7 +74,9 @@
             var weightLodUtil = new WeightLoadUtil(path);
 
             weightLodUtil.Load();
+
             var data = weightLodUtil.GetData();
+            var coreToLoad = weightLodUtil.GetNewCore();
 
             //////////////////
             Console.ReadKey();

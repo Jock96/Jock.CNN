@@ -8,6 +8,7 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using CNN.BL.Helpers;
 
     /// <summary>
     /// Инструмент загрузки весов.
@@ -41,158 +42,148 @@
             try
             {
                 _weightTypeToPathDictionary = new Dictionary<WeightsType, List<string>>();
-                CheckDirectory(_path);
 
                 var outputLayerFiles = Directory.GetFiles(
                     Path.Combine(_path, FileConstants.WEIGHTS_DIRECTORY, LayersConstants.OUTPUT_LAYER_NAME)).ToList();
 
-                CheckFiles(outputLayerFiles);
                 _weightTypeToPathDictionary.Add(WeightsType.Output, outputLayerFiles);
 
                 var hiddenLayerFiles = Directory.GetFiles(
                     Path.Combine(_path, FileConstants.WEIGHTS_DIRECTORY, LayersConstants.HIDDEN_LAYER_NAME)).ToList();
 
-                CheckFiles(hiddenLayerFiles);
                 _weightTypeToPathDictionary.Add(WeightsType.Hidden, hiddenLayerFiles);
 
                 var coreFiles = Directory.GetFiles(
                     Path.Combine(_path, FileConstants.WEIGHTS_DIRECTORY, MatrixConstants.MATRIX_NAME)).ToList();
 
-                CheckFiles(coreFiles);
                 _weightTypeToPathDictionary.Add(WeightsType.Core, coreFiles);
             }
-            catch (Exception exception)
+            catch
             {
-                Console.BackgroundColor = ConsoleColor.Red;
-                Console.ForegroundColor = ConsoleColor.Black;
-
-                Console.WriteLine($"{ConsoleMessageConstants.ERROR_MESSAGE} " +
-                    $"{exception}!");
-
-                Console.BackgroundColor = ConsoleColor.Black;
-                Console.ForegroundColor = ConsoleColor.Green;
-
-                Console.WriteLine(ConsoleMessageConstants.PRESS_ANY_KEY_MESSAGE);
-                Console.ReadKey();
-
-                Environment.Exit(0);
+                ErrorHelper.DirectoryError();
             }
-        }
-
-        /// <summary>
-        /// Действия при ошибке парсинга
-        /// </summary>
-        private void ParseError()
-        {
-            Console.BackgroundColor = ConsoleColor.Red;
-            Console.ForegroundColor = ConsoleColor.Black;
-
-            Console.WriteLine($"{ConsoleMessageConstants.ERROR_MESSAGE} " +
-                $"не удалось преобразовать значение веса!");
-
-            Console.BackgroundColor = ConsoleColor.Black;
-            Console.ForegroundColor = ConsoleColor.Green;
-
-            Console.WriteLine(ConsoleMessageConstants.PRESS_ANY_KEY_MESSAGE);
-            Console.ReadKey();
-
-            Environment.Exit(0);
         }
 
         /// <summary>
         /// Получить данные.
         /// </summary>
         /// <returns>Вовзращает словарь, где ключ - тип весов, значение - список весов.</returns>
-        public Dictionary<WeightsType, List<double>> GetData()
+        public Dictionary<WeightsType, Dictionary<int, List<double>>> GetData()
         {
-
-            // TODO сделать свитч кейс и возвращать словарь словарей.
-            var weightTypeToDataDictionary = new Dictionary<WeightsType, List<double>>();
+            var weightTypeToDataDictionary = new Dictionary<WeightsType, Dictionary<int, List<double>>>();
 
             foreach (var keyValuePair in _weightTypeToPathDictionary)
             {
-                var weightsValue = new List<double>();
-
-                foreach (var path in keyValuePair.Value)
-                {
-                    using (var stream = File.OpenRead(path))
-                    {
-                        var array = new byte[stream.Length];
-                        stream.Read(array, 0, array.Length);
-
-                        var valueString = Encoding.Default.GetString(array);
-                        var indexOfSeparator = 0;
-
-                        do
-                        {
-                            indexOfSeparator = valueString.IndexOf(" ");
-
-                            if (indexOfSeparator == -1)
-                                continue;
-
-                            var value = valueString.Remove(indexOfSeparator);
-
-                            if (!double.TryParse(value, out var convertedValue))
-                                ParseError();
-
-                            weightsValue.Add(convertedValue);
-                            valueString = valueString.Remove(0, value.Length + 1);
-                        } while (indexOfSeparator != -1);
-                    }
-                }
-
-                weightTypeToDataDictionary.Add(keyValuePair.Key, weightsValue);
+                if (keyValuePair.Key.Equals(WeightsType.Output) ||
+                    keyValuePair.Key.Equals(WeightsType.Hidden))
+                    GetWeights(ref weightTypeToDataDictionary, keyValuePair);
             }
 
             return weightTypeToDataDictionary;
         }
 
         /// <summary>
-        /// Проверить файлы.
+        /// Получить веса слоя.
         /// </summary>
-        /// <param name="files">Полученные файлы.</param>
-        private void CheckFiles(List<string> files)
+        /// <param name="weightTypeToDataDictionary">Словарь для заполнения.</param>
+        /// <param name="keyValuePair">Пара ключ - тип весов, значение - пути к файлам весов.</param>
+        private void GetWeights(ref Dictionary<WeightsType, Dictionary<int, List<double>>> weightTypeToDataDictionary, KeyValuePair<WeightsType, List<string>> keyValuePair)
         {
-            if (!files.Any())
+            var weightsValue = new List<double>();
+            var neuronIndexToWeightsDictionary = new Dictionary<int, List<double>>();
+
+            foreach (var path in keyValuePair.Value)
             {
-                Console.BackgroundColor = ConsoleColor.Red;
-                Console.ForegroundColor = ConsoleColor.Black;
+                using (var stream = File.OpenRead(path))
+                {
+                    var array = new byte[stream.Length];
+                    stream.Read(array, 0, array.Length);
 
-                Console.WriteLine($"{ConsoleMessageConstants.ERROR_MESSAGE} " +
-                    $"не удалось найти файлы весов!");
+                    var valueString = Encoding.Default.GetString(array);
+                    var indexOfSeparator = 0;
 
-                Console.BackgroundColor = ConsoleColor.Black;
-                Console.ForegroundColor = ConsoleColor.Green;
+                    do
+                    {
+                        indexOfSeparator = valueString.IndexOf(" ");
 
-                Console.WriteLine(ConsoleMessageConstants.PRESS_ANY_KEY_MESSAGE);
-                Console.ReadKey();
+                        if (indexOfSeparator == -1)
+                            continue;
 
-                Environment.Exit(0);
+                        var value = valueString.Remove(indexOfSeparator);
+
+                        if (!double.TryParse(value, out var convertedValue))
+                            ErrorHelper.ParseError();
+
+                        weightsValue.Add(convertedValue);
+                        valueString = valueString.Remove(0, value.Length + 1);
+                    } while (indexOfSeparator != -1);
+                }
+
+                var indexOfNeuronString = Path.GetFileNameWithoutExtension(path);
+
+                if (!int.TryParse(indexOfNeuronString, out var indexOfNeuron))
+                    ErrorHelper.ParseError();
+
+                neuronIndexToWeightsDictionary.Add(indexOfNeuron, weightsValue);
             }
+
+            weightTypeToDataDictionary.Add(keyValuePair.Key, neuronIndexToWeightsDictionary);
         }
 
         /// <summary>
-        /// Проерка директории.
+        /// Обновить ядро фильтра.
         /// </summary>
-        /// <param name="path">Путь.</param>
-        private void CheckDirectory(string path)
+        /// <returns>Возвращает новое ядро для обновления.</returns>
+        public double[,] GetNewCore()
         {
-            if (!Directory.Exists(path))
+            var newCore = new double[MatrixConstants.FILTER_MATRIX_SIZE,
+                MatrixConstants.FILTER_MATRIX_SIZE];
+
+            if (!_weightTypeToPathDictionary.TryGetValue(WeightsType.Core, out var corePathList))
+                ErrorHelper.GetDataError();
+
+            var corePath = corePathList.FirstOrDefault();
+
+            if (corePath == null)
+                ErrorHelper.GetDataError();
+
+            using (var stream = File.OpenRead(corePath))
             {
-                Console.BackgroundColor = ConsoleColor.Red;
-                Console.ForegroundColor = ConsoleColor.Black;
+                var array = new byte[stream.Length];
+                stream.Read(array, 0, array.Length);
 
-                Console.WriteLine($"{ConsoleMessageConstants.ERROR_MESSAGE} " +
-                    $"указанная директория не существует!");
+                var valueString = Encoding.Default.GetString(array);
 
-                Console.BackgroundColor = ConsoleColor.Black;
-                Console.ForegroundColor = ConsoleColor.Green;
+                for (var xIndex = 0; xIndex < MatrixConstants.FILTER_MATRIX_SIZE; ++xIndex)
+                    for (var yIndex = 0; yIndex < MatrixConstants.FILTER_MATRIX_SIZE; ++yIndex)
+                    {
+                        var stringToCompare = $"{MatrixConstants.POSITION_IN_X_AXIS}{xIndex}" +
+                            $"{MatrixConstants.KEY_SEPARATOR}" +
+                            $"{MatrixConstants.POSITION_IN_Y_AXIS}{yIndex}";
 
-                Console.WriteLine(ConsoleMessageConstants.PRESS_ANY_KEY_MESSAGE);
-                Console.ReadKey();
+                        var cuttedStringValue = valueString.Replace(stringToCompare, string.Empty);
+                        var indexOfSeparator = cuttedStringValue.IndexOf(" ");
 
-                Environment.Exit(0);
+                        var value = string.Empty;
+
+                        if (indexOfSeparator == -1)
+                        {
+                            value = cuttedStringValue;
+                        }
+                        else
+                        {
+                            value = cuttedStringValue.Remove(indexOfSeparator);
+                        }
+
+                        if (!double.TryParse(value, out var prepearedValue))
+                            ErrorHelper.ParseError();
+
+                        newCore[xIndex, yIndex] = prepearedValue;
+                        valueString = cuttedStringValue.Remove(0, value.Length + 1);
+                    }
             }
+
+            return newCore;
         }
     }
 }

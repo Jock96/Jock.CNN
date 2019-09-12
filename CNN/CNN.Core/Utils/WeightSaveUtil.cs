@@ -64,7 +64,7 @@
                         stream.Write($"{MatrixConstants.POSITION_IN_X_AXIS}{xIndex}" +
                             $"{MatrixConstants.KEY_SEPARATOR}" +
                             $"{MatrixConstants.POSITION_IN_Y_AXIS}{yIndex}" +
-                            $"{filterCore[xIndex, yIndex]}");
+                            $"{filterCore[xIndex, yIndex]} ");
                     }
             }
         }
