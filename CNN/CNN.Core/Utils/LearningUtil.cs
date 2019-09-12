@@ -126,6 +126,10 @@
 
             Console.WriteLine(ConsoleMessageConstants.PRESS_ANY_KEY_MESSAGE);
             Console.ReadKey();
+
+            Console.WriteLine(ConsoleMessageConstants.EXIT_MESSAGE);
+            System.Threading.Thread.Sleep(500);
+            Environment.Exit(0);
         }
 
         /// <summary>

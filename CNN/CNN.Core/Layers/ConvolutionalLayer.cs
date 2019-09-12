@@ -38,6 +38,30 @@
         }
 
         /// <summary>
+        /// Приготовить к распознаванию.
+        /// </summary>
+        /// <param name="filterCore">Ядро фильтра.</param>
+        public void RecognizeMode(double[,] filterCore)
+        {
+            _convolutionalLayerData = new List<NeuronModel>();
+
+            var offset = MatrixConstants.MATRIX_SIZE - MatrixConstants.FILTER_MATRIX_SIZE;
+            var step = MatrixConstants.MATRIX_SIZE - offset;
+
+            for (var xIndex = 0; xIndex < step; ++xIndex)
+                for (var yIndex = 0; yIndex < step; ++yIndex)
+                {
+                    var inputs = new List<double>();
+                    var weights = new List<double>();
+
+                    GetDataByFilterCore(filterCore, xIndex, yIndex, inputs, weights);
+                    var neuron = new NeuronModel(inputs, weights);
+
+                    _convolutionalLayerData.Add(neuron);
+                }
+        }
+
+        /// <summary>
         /// Инициализацяи свёрточного слоя.
         /// </summary>
         /// <param name="filterCore">Ядро фильтра.</param>

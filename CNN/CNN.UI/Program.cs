@@ -78,8 +78,103 @@
             var data = weightLodUtil.GetData();
             var coreToLoad = weightLodUtil.GetNewCore();
 
-            //////////////////
+            FilterCoreModel.UpdateCore(coreToLoad);
+
+            var breakFlag = false;
+            var isFirstIteration = true;
+
+            do
+            {
+                if (isFirstIteration)
+                {
+                    RecognizeImage(data);
+                    isFirstIteration = false;
+                }
+
+                Console.WriteLine(ConsoleMessageConstants.RECOGNIZE_ANOTHER_MESSAGE);
+                var dialogResult = Console.ReadLine();
+
+                if (DialogConstants.NoResults.Contains(dialogResult))
+                    breakFlag = true;
+
+                if (DialogConstants.YesResults.Contains(dialogResult))
+                    RecognizeImage(data);
+
+            } while (!breakFlag);
+
+            Console.WriteLine(ConsoleMessageConstants.PRESS_ANY_KEY_MESSAGE);
             Console.ReadKey();
+
+            Console.WriteLine(ConsoleMessageConstants.EXIT_MESSAGE);
+            System.Threading.Thread.Sleep(500);
+            Environment.Exit(0);
+        }
+
+        /// <summary>
+        /// Распознать изображение.
+        /// </summary>
+        /// <param name="data">Данные весов.</param>
+        private static void RecognizeImage(Dictionary<BL.Enums.WeightsType, Dictionary<int, List<double>>> data)
+        {
+            Console.WriteLine(ConsoleMessageConstants.PATH_MESSAGE);
+
+            var pathToImages = Console.ReadLine();
+
+            if (string.IsNullOrEmpty(pathToImages))
+                pathToImages = PathHelper.GetResourcesPath();
+
+            if (!Directory.Exists(pathToImages))
+                ErrorHelper.DirectoryError();
+
+            var filesInDirectory = Directory.GetFiles(pathToImages).ToList();
+
+            var imagesInDirectory = filesInDirectory.FindAll(file =>
+            file.Contains(FileConstants.IMAGE_EXTENSION));
+
+            ErrorHelper.CheckFiles(imagesInDirectory);
+
+            var imageName = string.Empty;
+            var breakFlag = false;
+
+            do
+            {
+                Console.BackgroundColor = ConsoleColor.Blue;
+                Console.ForegroundColor = ConsoleColor.Black;
+
+                Console.WriteLine(ConsoleMessageConstants.IMAGES_IN_DIRECTORY_MESSAGE);
+
+                imagesInDirectory.ForEach(imagePath =>
+                Console.WriteLine(Path.GetFileNameWithoutExtension(imagePath) + " "));
+
+                Console.Write(ConsoleMessageConstants.FILE_NAME_MESSAGE);
+                imageName = Console.ReadLine();
+
+                if (imagesInDirectory.Contains(Path.Combine(pathToImages, imageName + FileConstants.IMAGE_EXTENSION)))
+                    breakFlag = true;
+
+                Console.BackgroundColor = ConsoleColor.Black;
+                Console.ForegroundColor = ConsoleColor.Green;
+
+            } while (!breakFlag);
+
+            var fullPath = Path.Combine(pathToImages, $"{imageName}{FileConstants.IMAGE_EXTENSION}");
+
+            if (!data.TryGetValue(BL.Enums.WeightsType.Hidden, out var hiddenLayerWeights))
+                ErrorHelper.GetDataError();
+
+            if (!data.TryGetValue(BL.Enums.WeightsType.Output, out var outputLayerWeights))
+                ErrorHelper.GetDataError();
+
+            var imageConverterUtil = new ImageConverterUtil(new List<string> { fullPath });
+            var imageMatrixList = imageConverterUtil.ConvertImagesToMatrix();
+
+            var imageData = imageMatrixList.FirstOrDefault();
+
+            if (imageData == null)
+                ErrorHelper.GetDataError();
+
+            var recognizeUtil = new RecognizeUtil(outputLayerWeights, hiddenLayerWeights, imageData);
+            recognizeUtil.InitializeNetwork();
         }
 
         /// <summary>

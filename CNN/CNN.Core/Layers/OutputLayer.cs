@@ -5,6 +5,7 @@
     using CNN.BL.Enums;
     using Models;
     using CNN.Core.Extensions;
+    using CNN.BL.Helpers;
 
     /// <summary>
     /// Класс выходного слоя.
@@ -33,6 +34,23 @@
         public OutputLayer(List<NeuronModel> hiddenLayerData)
         {
             _hiddenLayerData = hiddenLayerData;
+        }
+
+        /// <summary>
+        /// Приготовить к распознаванию.
+        /// </summary>
+        /// <param name="neuronIndexToWeightsValueDictionary">Словарь значений весов,
+        /// где ключ - индекс нейрона, значение - веса нейрона.</param>
+        public void RecognizeMode(Dictionary<int, List<double>> neuronIndexToWeightsValueDictionary)
+        {
+            var inputs = new List<double>();
+
+            if (!neuronIndexToWeightsValueDictionary.TryGetValue(0, out var weights))
+                ErrorHelper.GetDataError();
+
+            _hiddenLayerData.ForEach(neuron => inputs.Add(neuron.Output));
+
+            _outputNeuron = new NeuronModel(inputs, weights);
         }
 
         /// <summary>

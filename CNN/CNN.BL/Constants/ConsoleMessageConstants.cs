@@ -12,6 +12,16 @@
             "приложение свёрточной нейронной сети.";
 
         /// <summary>
+        /// Сообщение доступных изображений.
+        /// </summary>
+        public const string IMAGES_IN_DIRECTORY_MESSAGE = "Доступные изображения в директории: ";
+
+        /// <summary>
+        /// Сообщение распознавания другого изображения.
+        /// </summary>
+        public const string RECOGNIZE_ANOTHER_MESSAGE = "Вы хотите распознать другое изображение? (Y/N)";
+
+        /// <summary>
         /// Сообщение о выборе обучения.
         /// </summary>
         public const string LEARN_RESULT_MESSAGE = "Вы выбрали обучение.";
@@ -54,6 +64,11 @@
         /// </summary>
         public const string PATH_MESSAGE = "Введите путь до файлов с изображениями " +
             "(клавиша Enter для пути по умолчанию): ";
+
+        /// <summary>
+        /// Сообщение выбора файла изображения.
+        /// </summary>
+        public const string FILE_NAME_MESSAGE = "Введите имя файла изображения: ";
 
         /// <summary>
         /// Сообщение ошибки.

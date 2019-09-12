@@ -7,6 +7,7 @@
     using CNN.BL.Enums;
     using CNN.Core.Extensions;
     using CNN.BL.Constants;
+    using CNN.BL.Helpers;
 
     /// <summary>
     /// Класс скрытого слоя.
@@ -38,12 +39,36 @@
         }
 
         /// <summary>
+        /// Приготовить к распознаванию.
+        /// </summary>
+        /// <param name="neuronIndexToWeightsValueDictionary">Словарь значений весов,
+        /// где ключ - индекс нейрона, значение - веса нейрона.</param>
+        public void RecognizeMode(Dictionary<int, List<double>> neuronIndexToWeightsValueDictionary)
+        {
+            _hiddenLayerData = new List<NeuronModel>();
+            var countOfNeuronsInHiddenLayer = (int)_convolutionalLayerData.Count / 2;
+
+            var inputs = new List<double>();
+
+            _convolutionalLayerData.ForEach(neuronOfConvolutionalLayer
+                => inputs.Add(neuronOfConvolutionalLayer.Output));
+
+            for (var index = 0; index < countOfNeuronsInHiddenLayer; ++index)
+            {
+                if (!neuronIndexToWeightsValueDictionary.TryGetValue(index, out var weights))
+                    ErrorHelper.GetDataError();
+
+                var neuron = new NeuronModel(inputs, weights);
+                _hiddenLayerData.Add(neuron);
+            }
+        }
+
+        /// <summary>
         /// Инициализация слоя.
         /// </summary>
         public void Initialize()
         {
             _hiddenLayerData = new List<NeuronModel>();
-
             var countOfNeuronsInHiddenLayer = (int)_convolutionalLayerData.Count / 2;
 
             for (var index = 0; index < countOfNeuronsInHiddenLayer; ++index)
