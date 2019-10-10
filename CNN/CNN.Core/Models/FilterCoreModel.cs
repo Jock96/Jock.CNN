@@ -35,6 +35,8 @@
             for (var xIndex = 0; xIndex < MatrixConstants.FILTER_MATRIX_SIZE; ++xIndex)
                 for (var yIndex = 0; yIndex < MatrixConstants.FILTER_MATRIX_SIZE; ++yIndex)
                 {
+                    //TODO 0 - 0,01
+
                     _value[xIndex, yIndex] = random.NextDouble();
                     _lastValue[xIndex, yIndex] = 0d;
                 }

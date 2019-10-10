@@ -198,7 +198,6 @@
             ConvolutionalToHiddenDeltasWork(hiddenLayer, convolutionalLayer);
             ConvolutionalToHiddenWeightsWork(hiddenLayer, convolutionalLayer);
 
-            // TODO: В ядре всё по нулям.
             FilterCoreWork(convolutionalLayer, inputLayer);
         }
 
@@ -319,6 +318,10 @@
         private double[,] GetMatrixOfValuesFromInputData(Dictionary<string, double> inputLayerData,
             int xPositionInFilterCore, int yPositionInFilterCore)
         {
+            // TODO убрать значение среднести
+            // TODO добавить пулинг
+            // TODO взять картинки 7 на 7
+
             var valuesFromInputData = new double[MatrixConstants.FILTER_MATRIX_SIZE,
                         MatrixConstants.FILTER_MATRIX_SIZE];
 
@@ -506,7 +509,12 @@
                 ++indexOfGradient;
             }
 
-            outputLayer.UpdateWeightsOfNeuronInLayer(updatedWeights);
+            var weights = outputLayer.GetOutputNeuron().Weights;
+
+            for (var index = 0; index < weights.Count; ++index)
+                weights[index] += updatedWeights[index];
+
+            outputLayer.UpdateWeightsOfNeuronInLayer(weights);
         }
 
         /// <summary>
@@ -539,7 +547,12 @@
                     ++weightIndex;
                 }
 
-                neuronIndexToUpdatedWeightsDictionary.Add(neuronIndex, updatedWeights);
+                var weightsToUpdate = neuron.Weights;
+
+                for (var index = 0; index < weightsToUpdate.Count; ++index)
+                    weightsToUpdate[index] += updatedWeights[index];
+
+                neuronIndexToUpdatedWeightsDictionary.Add(neuronIndex, weightsToUpdate);
                 ++neuronIndex;
             }
 
