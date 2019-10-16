@@ -28,6 +28,6 @@
         /// <summary>
         /// Количество итераций в одной эпохе.
         /// </summary>
-        public int IterationsInEpochCount { get; set; } = 1;
+        public int IterationsInEpochCount { get; set; } = 10;
     }
 }

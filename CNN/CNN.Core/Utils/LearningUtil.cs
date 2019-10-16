@@ -213,13 +213,13 @@
 
             convolutionalLayer.GetLayerNeurons().ForEach(neuron => convolutionalLayerDeltas.Add(neuron.Delta));
 
-            var filterCoreMatrixOfMiddleDeltas = GetFilterCoreMiddleDeltasMatrix(
+            var filterCoreMatrixDeltas = GetFilterCoreDeltasMatrix(
                 inputLayerNeurons, convolutionalLayerDeltas);
 
-            var filterCoreMatrixOfMiddleGradients = GetFilterCoreMiddleGradientMatrix(
-                filterCoreMatrixOfMiddleDeltas, inputLayerNeurons);
+            var filterCoreMatrixGradients = GetFilterCoreGradientMatrix(
+                filterCoreMatrixDeltas, inputLayerNeurons);
 
-            UpdateCore(filterCoreMatrixOfMiddleGradients);
+            UpdateCore(filterCoreMatrixGradients);
         }
 
         /// <summary>
@@ -248,7 +248,7 @@
         /// <param name="filterCoreMatrixOfMiddleDeltas">Матрицасредних дельт.</param>
         /// <param name="inputLayerData">Данные входного слоя.</param>
         /// <returns>Возвращает матрицу средних градиентов.</returns>
-        private double[,] GetFilterCoreMiddleGradientMatrix(
+        private double[,] GetFilterCoreGradientMatrix(
             double[,] filterCoreMatrixOfMiddleDeltas, Dictionary<string, double> inputLayerData)
         {
             var middleGradientMatrix = new double[MatrixConstants.FILTER_MATRIX_SIZE,
@@ -278,7 +278,7 @@
         /// <param name="inputLayerData">Данные входного слоя.</param>
         /// <param name="convolutionalLayerDeltas">Дельты свёрточного слоя.</param>
         /// <returns>Возвращает матрицу средньких дельт для ядра фильтра.</returns>
-        private double[,] GetFilterCoreMiddleDeltasMatrix(Dictionary<string, double> inputLayerData,
+        private double[,] GetFilterCoreDeltasMatrix(Dictionary<string, double> inputLayerData,
             List<double> convolutionalLayerDeltas)
         {
             var middleDeltasMatrix = new double[MatrixConstants.FILTER_MATRIX_SIZE,
